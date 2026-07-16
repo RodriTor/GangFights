@@ -17,6 +17,7 @@ Inspirado fuertemente en el clásico ***Superfighters***, el juego sitúa a los 
 * **Armas de fuego e ítems:** Aparición dinámica de armamento en el mapa (pistolas, escopetas, ametralladoras) y elementos arrojadizos.
 * **Interacción con el entorno:** Uso de coberturas, barriles y plataformas para obtener ventajas tácticas.
 
+---
 ## - Tecnologias y herramientas
 El ecosistema de desarrollo ha sido seleccionado para garantizar un rendimiento óptimo en la renderización y la comunicación en red:
 
@@ -68,6 +69,7 @@ Buscá la clase Lwjgl3Launcher.java (en lwjgl3/src/main/java/...).
 
 Hacé clic derecho sobre la clase y seleccioná Run 'Lwjgl3Launcher.main()'.
 
+---
 ## Enlace a la Wiki del Proyecto (Propuesta Completa)
 * [Ver la Propuesta Completa del Proyecto aquí](https://github.com/RodriTor/GangFights/wiki/Home)
 
@@ -80,7 +82,7 @@ Actualmente el proyecto se encuentra en la Fase 1: Configuración inicial y arqu
 
 [x] Redacción inicial de la propuesta de desarrollo.
 ```
-
+---
 
 # Tutor del Proyecto:
 Prof. Pablo Jasinski
