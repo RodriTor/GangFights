@@ -68,6 +68,9 @@ Buscá la clase Lwjgl3Launcher.java (en lwjgl3/src/main/java/...).
 
 Hacé clic derecho sobre la clase y seleccioná Run 'Lwjgl3Launcher.main()'.
 
+## Enlace a la Wiki del Proyecto (Propuesta Completa)
+* [Ver la Propuesta Completa del Proyecto aquí](https://github.com/RodriTor/GangFights/wiki/Home)
+
 ## - Estado de avances actual del proyecto
 Actualmente el proyecto se encuentra en la Fase 1: Configuración inicial y arquitectura base.
 ```
