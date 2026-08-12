@@ -2,10 +2,6 @@
 
 Todos los cambios relevantes de **GangFights** se documentarán en este archivo.
 
-## [Unreleased]
-
-_Aún sin cambios registrados._
-
 ## [0.1.1] - 2026-08-12
 
 ### Corregido
