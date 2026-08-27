@@ -2,11 +2,13 @@
 
 Todos los cambios relevantes de **GangFights** se documentarán en este archivo.
 
-## [0.1.1] - 2026-08-12
+## [0.1.1] - 2026-08-26
 
 ### Corregido
-- Corregida la fecha inválida en la documentación del CHANGELOG.
-- Unificada la compatibilidad y configuración de Java en todos los módulos del proyecto.
+- Unificada definitivamente la configuración de Java a la versión 21 en el submódulo `lwjgl3`.
+- Eliminado por completo el módulo web `html` para evitar conflictos de compatibilidad de versiones.
+- Sincronizada la versión del proyecto en `gradle.properties` con el changelog.
+- Corregida la fecha inválida anterior en la documentación del CHANGELOG.
 - Corregido el comando de clonación de Git y añadidos los comandos de ejecución desde terminal en el `README.md`.
 - Agregada la declaración explícita de LibGDX v1.14.2 en la documentación.
 
