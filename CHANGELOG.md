@@ -2,6 +2,24 @@
 
 Todos los cambios relevantes de **GangFights** se documentarán en este archivo.
 
+## [0.2.0] - 2026-08-28
+
+### Añadido
+- Clase `PantallaInicio` con transición temporalizada automatizada hacia el menú principal.
+- Clase `MenuInicial` estructurada como punto de partida para la interfaz del usuario.
+- Paquete `Utilidades` para estandarizar el código del proyecto:
+    - `Render`: Gestor estático de `SpriteBatch` y encapsulamiento de limpieza OpenGL (`limpiarPantalla`).
+    - `Imagen`: Envoltorio personalizado de `Texture` y `Sprite` con soporte para manipulación de opacidad (`setTrasparencia`), coordenadas y lectura de dimensiones.
+    - `Recursos`: Diccionario estático de rutas para centralizar el llamado a los assets gráficos.
+
+### Cambiado
+- La clase raíz del juego (`Principal`) ahora extiende `Game` en lugar de `ApplicationAdapter` para habilitar el manejo múltiple de pantallas.
+- La lógica matemática del desvanecimiento visual (fade) en `PantallaInicio` ahora se calcula en segundos reales utilizando la variable `delta`, reemplazando la ejecución por iteración de frames.
+
+### Corregido
+- Superposición gráfica de pantallas solucionada agregando la limpieza del buffer (`glClearColor`) en los métodos de renderizado.
+- Prevención de conflictos de compilación en Android/HTML mediante la eliminación de dependencias incompatibles de Java clásico (`java.awt.*`).
+
 ## [0.1.1] - 2026-08-26
 
 ### Corregido

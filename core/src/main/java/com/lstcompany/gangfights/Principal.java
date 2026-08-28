@@ -1,32 +1,35 @@
 package com.lstcompany.gangfights;
 
-import com.badlogic.gdx.ApplicationAdapter;
+import Pantallas.PantallaInicio;
+import Utilidades.Render;
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.utils.ScreenUtils;
 
 /** {@link com.badlogic.gdx.ApplicationListener} implementation shared by all platforms. */
-public class Principal extends ApplicationAdapter {
+public class Principal extends Game {
+
+
+
     private SpriteBatch batch;
     private Texture image;
 
     @Override
     public void create() {
-        batch = new SpriteBatch();
-        image = new Texture("libgdx.png");
+        Render.juego = this;
+        Render.batch = new SpriteBatch();
+
+        this.setScreen(new PantallaInicio());
     }
 
     @Override
     public void render() {
-        ScreenUtils.clear(0.15f, 0.15f, 0.2f, 1f);
-        batch.begin();
-        batch.draw(image, 140, 210);
-        batch.end();
+        super.render();
     }
 
     @Override
     public void dispose() {
-        batch.dispose();
-        image.dispose();
+
+        Render.batch.dispose();
     }
 }
