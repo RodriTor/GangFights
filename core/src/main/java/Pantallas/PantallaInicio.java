@@ -1,5 +1,5 @@
 package Pantallas;
-import Utilidades.Imagen;
+import Elementos.Imagen;
 import Utilidades.Render;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
