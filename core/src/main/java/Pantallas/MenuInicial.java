@@ -7,6 +7,7 @@ import Utilidades.Recursos;
 import Utilidades.Render;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Cursor;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -56,6 +57,25 @@ public class MenuInicial implements Screen {
         float playY = 85;
         play.setPosicion(playX, playY);
 
+        float mouseX = Gdx.input.getX();
+        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
+
+
+        boolean sobreTexto = mouseX >= playX && mouseX <= playX + layout.width &&
+            mouseY >= playY - 10 && mouseY <= playY + layout.height + 10;
+
+
+        if (sobreTexto) {
+            Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Hand);
+
+            if (Gdx.input.justTouched()) {
+                    Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
+                    Render.juego.setScreen(new PantallaJuego());
+            }
+        } else {
+            Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
+        }
+
         b.begin();
         menuInicial.dibujar();
 
@@ -63,6 +83,11 @@ public class MenuInicial implements Screen {
 
         play.dibujar();
         b.end();
+
+
+        if(Gdx.input.justTouched()) {
+            Render.juego.setScreen(new PantallaJuego());
+        }
     }
 
     @Override

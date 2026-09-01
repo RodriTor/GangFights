@@ -41,15 +41,18 @@ public class Texto {
     }
 
     public void dibujar() {
+
         fuente.draw(Render.batch, texto, x, y);
     }
 
     public float getX() {
         return x;
     }
+
     public float getY() {
         return y;
     }
+
     public float getAncho() {
         return ancho;
     }
@@ -57,6 +60,7 @@ public class Texto {
     public float getAlto() {
         return alto;
     }
+
     public String getTexto() {
         return texto; }
 

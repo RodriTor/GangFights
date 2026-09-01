@@ -2,6 +2,7 @@ package Utilidades;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.lstcompany.gangfights.Principal;
 
@@ -15,5 +16,14 @@ public class Render {
 
     }
 
+    public static void comenzarBatch(OrthographicCamera camara) {
+        Gdx.gl.glEnable(GL20.GL_BLEND);
+        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+        batch.setProjectionMatrix(camara.combined);
+        batch.begin();
+    }
 
+    public static void terminarBatch() {
+        batch.end();
+    }
 }

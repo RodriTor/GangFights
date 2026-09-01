@@ -1,6 +1,7 @@
 package com.lstcompany.gangfights;
 
 import Pantallas.PantallaInicio;
+import Pantallas.PantallaJuego;
 import Utilidades.Render;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.Texture;
@@ -19,7 +20,7 @@ public class Principal extends Game {
         Render.juego = this;
         Render.batch = new SpriteBatch();
 
-        this.setScreen(new PantallaInicio());
+        this.setScreen(new PantallaJuego());
     }
 
     @Override
