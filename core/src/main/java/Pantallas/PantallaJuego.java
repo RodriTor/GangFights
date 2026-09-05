@@ -49,72 +49,81 @@ public class PantallaJuego implements Screen {
 		mapa = new Mapa(mundo);
 
         jugador = new Jugador(
-            mundo,
-            640,
-            300,
-            1,
+            mundo, 640, 300, 1,
             Recursos.JasinskiQUieto,
             Recursos.JasinskiAgachado,
-            Recursos.JasinskiCorrer
+            Recursos.JasinskiCorrer,
+            Recursos.JasinskiSaltar,
+            Recursos.JasinskiGolpeMano
         );
 
         jugador2 = new Jugador(
-            mundo,
-            700,
-            300,
-            2,
-            Recursos.JasinskiQUieto,
-            Recursos.JasinskiAgachado,
-            Recursos.JasinskiCorrer
+            mundo, 700, 300, 2,
+            Recursos.SchepisQuieto,
+            Recursos.SchepisAgachado,
+            Recursos.SchepisCorrer,
+            Recursos.SchepisSaltar,
+            Recursos.SchepisGolpeMano
         );
     }
 
 
 	@Override
-	public void render(float delta) {
+    public void render(float delta) {
 
-		jugador.actualizar(delta);
+        jugador.actualizar(delta);
         jugador2.actualizar(delta);
 
-		//actualizamos la fisica
-		mundo.step(1 / 60f, 6, 2);
+        jugador.comprobarAtaque(jugador2);
+        jugador2.comprobarAtaque(jugador);
 
+        // actualizamos la fisica
+        mundo.step(1 / 60f, 6, 2);
 
-		Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
-		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 
-		camara.update();
+        camara.update();
 
-		// esto hace que shaperender use nuestra camara
-		shapeRenderer.setProjectionMatrix(camara.combined);
+        // esto hace que shaperender use nuestra camara
+        shapeRenderer.setProjectionMatrix(camara.combined);
 
-		shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
 
-		for(Plataforma plataforma : mapa.getPlataformas()) {
-			shapeRenderer.rect(plataforma.getX(), plataforma.getY(), plataforma.getAncho(), plataforma.getAlto());
-		}
+        for(Plataforma plataforma : mapa.getPlataformas()) {
+            shapeRenderer.rect(plataforma.getX(), plataforma.getY(), plataforma.getAncho(), plataforma.getAlto());
+        }
 
-		float jugadorX = jugador.getCuerpo().getPosition().x * 10f;
+        // PROTECCIÓN CONTRA NULOS: Solo obtenemos la posición si el jugador sigue activo y su cuerpo no es nulo
+        if (jugador.isActivo() && jugador.getCuerpo() != null) {
+            float jugadorX = jugador.getCuerpo().getPosition().x * 10f;
+            float jugadorY = jugador.getCuerpo().getPosition().y * 10f;
+        }
 
-		float jugadorY = jugador.getCuerpo().getPosition().y * 10f;
-
-		shapeRenderer.end();
+        shapeRenderer.end();
 
         Render.comenzarBatch(camara);
 
-        TextureRegion frameJasinski = jugador.getFrameActual();
-        float posX = (jugador.getCuerpo().getPosition().x * 10f) - (jugador.getAncho() / 2f);
-        float posY = (jugador.getCuerpo().getPosition().y * 10f) - (jugador.getAlto() / 2f);
+        if (jugador.isActivo() && jugador.getCuerpo() != null) {
+            TextureRegion frameJasinski = jugador.getFrameActual();
+            if (frameJasinski != null) {
+                float posX = (jugador.getCuerpo().getPosition().x * 10f) - (jugador.getAncho() / 2f);
+                float posY = (jugador.getCuerpo().getPosition().y * 10f) - (jugador.getAlto() / 2f);
+                batch.draw(frameJasinski, posX, posY, jugador.getAncho(), jugador.getAlto());
+            }
+        }
 
-        batch.draw(frameJasinski, posX, posY, jugador.getAncho(), jugador.getAlto());
-
-        TextureRegion frameJugador2 = jugador2.getFrameActual();
-        float posX2 = (jugador2.getCuerpo().getPosition().x * 10f) - (jugador2.getAncho() / 2f);
-        float posY2 = (jugador2.getCuerpo().getPosition().y * 10f) - (jugador2.getAlto() / 2f);
-        batch.draw(frameJugador2, posX2, posY2, jugador2.getAncho(), jugador2.getAlto());
+        if (jugador2.isActivo() && jugador2.getCuerpo() != null) {
+            TextureRegion frameJugador2 = jugador2.getFrameActual();
+            if (frameJugador2 != null) {
+                float posX2 = (jugador2.getCuerpo().getPosition().x * 10f) - (jugador2.getAncho() / 2f);
+                float posY2 = (jugador2.getCuerpo().getPosition().y * 10f) - (jugador2.getAlto() / 2f);
+                batch.draw(frameJugador2, posX2, posY2, jugador2.getAncho(), jugador2.getAlto());
+            }
+        }
 
         Render.terminarBatch();
-	}
+    }
 
 	@Override
 

@@ -111,6 +111,10 @@ Hacé clic derecho sobre la clase y seleccioná **Run 'Lwjgl3Launcher.main()'**.
 
 * [Ver la Propuesta Completa del Proyecto aquí](https://github.com/RodriTor/GangFights/wiki/Home)
 
+## Enlace a prime video prototipo de GangFights
+
+* [Ver aqui el video.](https://drive.google.com/file/d/1Vvjx0PWnYLAvgEWsEveXI1aavYHklCuM/view?usp=drive_link)
+
 ## - Estado de avances actual del proyecto
 
 Actualmente el proyecto se encuentra en la Fase 1: Configuración inicial y arquitectura base.
