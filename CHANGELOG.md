@@ -2,6 +2,23 @@
 
 Todos los cambios relevantes de **GangFights** se documentarán en este archivo.
 
+## [0.2.6] - 2026-10-01
+
+### Añadido
+- Implementación de un sensor de suelo mediante fixtures de tipo sensor en Box2D para detectar el contacto de los jugadores con las plataformas.
+
+ - Incorporación de un contador de contactos de suelo para gestionar correctamente el estado de apoyo de cada jugador.
+
+- Creación de la clase EntradaJugador dentro del paquete Controles, encargada de gestionar las entradas de teclado de ambos jugadores.
+
+ ### Cambiado
+- Refactorización del procesamiento de movimiento en Jugador para delegar la lectura de las teclas a la clase EntradaJugador, separando la gestión de entradas de la lógica del personaje.
+
+- Adaptación del sistema de salto para utilizar la detección de contacto con el suelo y permitir saltar únicamente cuando el jugador está apoyado sobre una plataforma.
+
+### Corregido
+- Corrección de la condición lógica del salto que impedía realizarlo correctamente al estar sobre una plataforma.
+
 ## [0.2.5] - 2026-09-04
 
 ### Añadido
