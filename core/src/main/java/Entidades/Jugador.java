@@ -10,10 +10,20 @@ import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
+
+import Controles.EntradaJugador;
+
+
 
 public class Jugador extends Entidad {
     private Body cuerpo;
+    private Fixture sensorSuelo;
+    private int contactosSuelo = 0;
     private World mundo;
+    
+    private EntradaJugador entrada;
 
     private Texture hojaQuieto;
     private Texture hojaAgachado;
@@ -47,6 +57,7 @@ public class Jugador extends Entidad {
         super(x, y, 40, 80);
         this.mundo = mundo;
         this.idJugador = idJugador;
+        this.entrada = new EntradaJugador(idJugador);
 
         crearCuerpo();
         tiempoAnimacion = 0f;
@@ -104,7 +115,7 @@ public class Jugador extends Entidad {
         PolygonShape forma = new PolygonShape();
         forma.setAsBox((getAncho() / 2f) / escala, (getAlto() / 2f) / escala);
 
-        com.badlogic.gdx.physics.box2d.FixtureDef fixtureDef = new com.badlogic.gdx.physics.box2d.FixtureDef();
+        FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = forma;
         fixtureDef.density = 1.0f;
         fixtureDef.friction = 0.2f;
@@ -113,6 +124,42 @@ public class Jugador extends Entidad {
 
         cuerpo.createFixture(fixtureDef);
         forma.dispose();
+        
+        PolygonShape formaSensor = new PolygonShape();
+        
+        formaSensor.setAsBox(
+        	    (getAncho() * 0.35f) / escala,
+        	    0.08f,
+        	    new Vector2(0, -(getAlto() / 2f) / escala),
+        	    0
+        	);
+         
+         
+         FixtureDef sensorDef = new FixtureDef();
+         sensorDef.shape = formaSensor;
+         sensorDef.isSensor = true;
+         sensorDef.filter.categoryBits = 0x0004;
+         sensorDef.filter.maskBits = 0x0001;
+         
+         sensorSuelo = cuerpo.createFixture(sensorDef);
+         sensorSuelo.setUserData(this);
+         
+         formaSensor.dispose();
+    }
+    
+    public void registrarContactoSuelo() {
+    	contactosSuelo++;
+    }
+    
+    
+    public void eliminarContactoSuelo() {
+    	if(contactosSuelo > 0) {
+    		contactosSuelo--;
+    	}
+    }
+    
+    public boolean estaEnSuelo() {
+    	return contactosSuelo > 0;
     }
 
     @Override
@@ -134,21 +181,11 @@ public class Jugador extends Entidad {
         float velocidad = 13f;
         Vector2 velocidadActual = cuerpo.getLinearVelocity();
 
-        boolean teclaAbajo, teclaIzquierda, teclaDerecha, teclaSalto, teclaGolpe;
-
-        if (idJugador == 1) {
-            teclaAbajo = Gdx.input.isKeyPressed(Input.Keys.S);
-            teclaIzquierda = Gdx.input.isKeyPressed(Input.Keys.A);
-            teclaDerecha = Gdx.input.isKeyPressed(Input.Keys.D);
-            teclaSalto = Gdx.input.isKeyJustPressed(Input.Keys.W);
-            teclaGolpe = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // Tecla '1'
-        } else {
-            teclaAbajo = Gdx.input.isKeyPressed(Input.Keys.DOWN);
-            teclaIzquierda = Gdx.input.isKeyPressed(Input.Keys.LEFT);
-            teclaDerecha = Gdx.input.isKeyPressed(Input.Keys.RIGHT);
-            teclaSalto = Gdx.input.isKeyJustPressed(Input.Keys.UP);
-            teclaGolpe = Gdx.input.isKeyJustPressed(Input.Keys.N); // Tecla 'N'
-        }
+        boolean teclaAbajo = entrada.abajo();
+        boolean teclaIzquierda = entrada.izquierda();
+        boolean teclaDerecha = entrada.derecha();
+        boolean teclaSalto = entrada.saltar();
+        boolean teclaGolpe = entrada.golpear();
 
         if (estaGolpeando) {
             cuerpo.setLinearVelocity(0, velocidadActual.y);
@@ -162,7 +199,7 @@ public class Jugador extends Entidad {
             return;
         }
 
-        estaSaltando = Math.abs(velocidadActual.y) > 0.1f;
+        estaSaltando = !estaEnSuelo();
 
         if (teclaAbajo && !estaSaltando) {
             estaAgachado = true;
@@ -186,7 +223,7 @@ public class Jugador extends Entidad {
             estaCorriendo = false;
         }
 
-        if (teclaSalto && !estaSaltando) {
+        if (teclaSalto && estaEnSuelo()) {
             cuerpo.setLinearVelocity(velocidadActual.x, 12f);
             estaSaltando = true;
             estaCorriendo = false;

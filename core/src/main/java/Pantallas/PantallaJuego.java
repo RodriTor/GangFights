@@ -1,6 +1,7 @@
 package Pantallas;
 
 import Entidades.Entidad;
+
 import Entidades.Jugador;
 import Mundo.Mapa;
 import Mundo.Plataforma;
@@ -14,6 +15,10 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.physics.box2d.Contact;
+import com.badlogic.gdx.physics.box2d.ContactListener;
+import com.badlogic.gdx.physics.box2d.Fixture;
+import com.badlogic.gdx.physics.box2d.Manifold;
 
 import static Utilidades.Render.batch;
 
@@ -65,6 +70,7 @@ public class PantallaJuego implements Screen {
             Recursos.SchepisSaltar,
             Recursos.SchepisGolpeMano
         );
+        configurarContactos();
     }
 
 
@@ -124,6 +130,72 @@ public class PantallaJuego implements Screen {
 
         Render.terminarBatch();
     }
+	
+
+private void configurarContactos() {
+
+    mundo.setContactListener(new ContactListener() {
+
+        @Override
+        public void beginContact(Contact contacto) {
+            procesarContacto(contacto, true);
+        }
+
+        @Override
+        public void endContact(Contact contacto) {
+            procesarContacto(contacto, false);
+        }
+
+        @Override
+        public void preSolve(Contact contacto, Manifold manifold) {
+        }
+
+        @Override
+        public void postSolve(
+            Contact contacto,
+            com.badlogic.gdx.physics.box2d.ContactImpulse impulso
+        ) {
+        }
+    });
+}
+
+	private void procesarContacto(Contact contacto, boolean comenzar) {
+
+    Fixture fixtureA = contacto.getFixtureA();
+    Fixture fixtureB = contacto.getFixtureB();
+
+    detectarSensor(fixtureA, fixtureB, comenzar);
+    detectarSensor(fixtureB, fixtureA, comenzar);
+}
+
+	private void detectarSensor(
+			Fixture sensor,
+			Fixture otro,
+			boolean comenzar
+) {
+
+    if (!sensor.isSensor()) {
+        return;
+    }
+
+    if (!(sensor.getUserData() instanceof Jugador)) {
+        return;
+    }
+
+    if (otro.getFilterData().categoryBits != 0x0001) {
+        return;
+    }
+
+    Jugador jugador = (Jugador) sensor.getUserData();
+
+    if (comenzar) {
+        jugador.registrarContactoSuelo();
+    } else {
+        jugador.eliminarContactoSuelo();
+    }
+}
+
+	
 
 	@Override
 
