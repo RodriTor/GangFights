@@ -14,40 +14,11 @@ import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.FixtureDef;
-
-import Controles.EntradaJugador;
-
-
 
 import java.util.ArrayList;
 
+
 public class Jugador extends Entidad {
-<<<<<<< HEAD
-=======
-    private Body cuerpo;
-    private Fixture sensorSuelo;
-    private int contactosSuelo = 0;
-    private World mundo;
-    
-    private EntradaJugador entrada;
-
-    private Texture hojaQuieto;
-    private Texture hojaAgachado;
-    private Texture hojaCorrer;
-    private Texture hojaSalto;
-    private Texture hojaGolpe; // NUEVO
-
-    private Animation<TextureRegion> animacionQuieto;
-    private Animation<TextureRegion> animacionAgachado;
-    private Animation<TextureRegion> animacionCorrer;
-    private Animation<TextureRegion> animacionGolpe; // NUEVO (el golpe tiene 2 frames)
-    private TextureRegion regionSalto;
-
-    private float tiempoAnimacion;
-    private float tiempoGolpe = 0; // NUEVO
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
 
     private static final int ANCHO_FRAME = 32;
     private static final int ALTO_FRAME = 42;
@@ -96,25 +67,21 @@ public class Jugador extends Entidad {
                    boolean mirandoDerecha) {
         super(x, y, ANCHO_CUERPO, ALTO_CUERPO);
         this.mundo = mundo;
-<<<<<<< HEAD
         this.personaje = personaje;
         this.control = control;
         this.spawnX = x;
         this.spawnY = y;
         this.mirandoDerechaInicial = mirandoDerecha;
         this.mirandoDerecha = mirandoDerecha;
-=======
-        this.idJugador = idJugador;
-        this.entrada = new EntradaJugador(idJugador);
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
 
         crearCuerpo();
         cargarAnimaciones();
     }
 
+
     private TextureRegion[][] cargarHoja(String ruta) {
         Texture hoja = new Texture(Gdx.files.internal(ruta));
-        texturas.add(hoja);
+        texturas.add(hoja); // se libera en dispose()
         return TextureRegion.split(hoja, ANCHO_FRAME, ALTO_FRAME);
     }
 
@@ -150,7 +117,6 @@ public class Jugador extends Entidad {
         PolygonShape forma = new PolygonShape();
         forma.setAsBox(mitadAncho, mitadAlto);
 
-<<<<<<< HEAD
         FixtureDef fixtureCuerpo = new FixtureDef();
         fixtureCuerpo.shape = forma;
         fixtureCuerpo.density = 1.0f;
@@ -167,52 +133,8 @@ public class Jugador extends Entidad {
         fixtureSensor.filter.categoryBits = Config.CATEGORIA_JUGADOR;
         fixtureSensor.filter.maskBits = Config.CATEGORIA_PLATAFORMA;
         cuerpo.createFixture(fixtureSensor).setUserData(this);
-=======
-        FixtureDef fixtureDef = new FixtureDef();
-        fixtureDef.shape = forma;
-        fixtureDef.density = 1.0f;
-        fixtureDef.friction = 0.2f;
-        fixtureDef.filter.categoryBits = 0x0002;
-        fixtureDef.filter.maskBits = 0x0001;
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
 
         forma.dispose();
-        
-        PolygonShape formaSensor = new PolygonShape();
-        
-        formaSensor.setAsBox(
-        	    (getAncho() * 0.35f) / escala,
-        	    0.08f,
-        	    new Vector2(0, -(getAlto() / 2f) / escala),
-        	    0
-        	);
-         
-         
-         FixtureDef sensorDef = new FixtureDef();
-         sensorDef.shape = formaSensor;
-         sensorDef.isSensor = true;
-         sensorDef.filter.categoryBits = 0x0004;
-         sensorDef.filter.maskBits = 0x0001;
-         
-         sensorSuelo = cuerpo.createFixture(sensorDef);
-         sensorSuelo.setUserData(this);
-         
-         formaSensor.dispose();
-    }
-    
-    public void registrarContactoSuelo() {
-    	contactosSuelo++;
-    }
-    
-    
-    public void eliminarContactoSuelo() {
-    	if(contactosSuelo > 0) {
-    		contactosSuelo--;
-    	}
-    }
-    
-    public boolean estaEnSuelo() {
-    	return contactosSuelo > 0;
     }
 
 
@@ -252,21 +174,9 @@ public class Jugador extends Entidad {
         setPosicion(posicion.x * Config.PIXELES_POR_METRO, posicion.y * Config.PIXELES_POR_METRO);
     }
 
-<<<<<<< HEAD
     private void procesarAcciones() {
         float velocidadY = cuerpo.getLinearVelocity().y;
         estaSaltando = !estaEnSuelo();
-=======
-    private void procesarMovimiento() {
-        float velocidad = 13f;
-        Vector2 velocidadActual = cuerpo.getLinearVelocity();
-
-        boolean teclaAbajo = entrada.abajo();
-        boolean teclaIzquierda = entrada.izquierda();
-        boolean teclaDerecha = entrada.derecha();
-        boolean teclaSalto = entrada.saltar();
-        boolean teclaGolpe = entrada.golpear();
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
 
         if (estaGolpeando) {
             cuerpo.setLinearVelocity(0, velocidadY);
@@ -282,13 +192,7 @@ public class Jugador extends Entidad {
             return;
         }
 
-<<<<<<< HEAD
         if (control.estaPresionada(Accion.AGACHAR) && !estaSaltando) {
-=======
-        estaSaltando = !estaEnSuelo();
-
-        if (teclaAbajo && !estaSaltando) {
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
             estaAgachado = true;
             estaCorriendo = false;
             cuerpo.setLinearVelocity(0, velocidadY);
@@ -309,13 +213,8 @@ public class Jugador extends Entidad {
             estaCorriendo = false;
         }
 
-<<<<<<< HEAD
         if (control.fuePresionada(Accion.SALTAR) && !estaSaltando) {
             cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, VELOCIDAD_SALTO);
-=======
-        if (teclaSalto && estaEnSuelo()) {
-            cuerpo.setLinearVelocity(velocidadActual.x, 12f);
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
             estaSaltando = true;
             estaCorriendo = false;
             if (oyente != null) oyente.alSaltar();
@@ -401,6 +300,7 @@ public class Jugador extends Entidad {
         return region;
     }
 
+
     public void dispose() {
         for (Texture textura : texturas) {
             textura.dispose();
@@ -408,3 +308,4 @@ public class Jugador extends Entidad {
         texturas.clear();
     }
 }
+
