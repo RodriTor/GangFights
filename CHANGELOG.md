@@ -2,6 +2,70 @@
 
 Todos los cambios relevantes de **GangFights** se documentarán en este archivo.
 
+## [0.3.0] - 2026-10-03
+
+### Añadido
+- Sistema de entradas separado en el paquete `Entradas`: `Accion` (enum), `ControlJugador` (clase abstracta) y `ControlTeclado`. `Jugador` solo pide acciones y ya no conoce las teclas.
+- `ControlAudio`: teclas globales de audio (`M` silencia, `RePag`/`AvPag` o `+`/`-` cambian el volumen).
+- HUD fijo (`Hud`) con cámara y viewport propios: nombres de los jugadores, marcador, rondas ganadas, número de ronda, estado de la partida (pausa, ganador de ronda y de partida) y estado del audio.
+- Sistema de rondas y estados de partida (`Partida` y `EstadoPartida`): gana quien llegue primero a 3 rondas, con reaparición de los jugadores entre rondas.
+- Pausa durante la partida (`ESC`) con opción de volver al menú (`Q`).
+
+### Cambiado
+- La física avanza con paso fijo y acumulador de tiempo, por lo que ya no depende de los FPS.
+- El fade de `PantallaInicio` se calcula con `delta` (segundos reales) en lugar de incrementos fijos por frame.
+- El golpe solo impacta al rival que está de frente y dentro del alcance.
+- `Jugador` dibuja a través de `dibujar()` y recibe su control y su personaje por constructor.
+
+### Corregido
+- En el menú inicial cualquier clic comenzaba la partida; ahora solo se avanza eligiendo PLAY con `ENTER`.
+- La detección de suelo usa el sensor de pies y el contador de contactos en lugar de la velocidad vertical.
+- Se eliminaron atributos sin uso y el mensaje de depuración del golpe.
+
+### Eliminado
+- Acceso global `Render.juego`.
+
+
+## [0.2.7] - 2026-10-2
+
+### Añadido
+
+- `PantallaFinal`: pantalla de resultado con revancha (`ENTER`) o vuelta al menú (`ESC`).
+- Sistema de audio (`GestorAudio`, `Musica` y `Efecto`): música en bucle, efectos de sonido (golpe, salto, eliminación, clic y victoria) y volumen de música y de efectos por separado, con opción de silenciar. Los archivos de `assets/Audio` son provisorios.
+- `FitViewport` de 1280x720 en el juego, el HUD y todos los menús, para adaptarse a cualquier tamaño de ventana sin deformar.
+- Menú principal controlado solo con teclado (`↑`/`↓` y `ENTER`): la opción elegida se muestra más grande y en amarillo, y el cursor del mouse queda oculto. Nueva opción CONFIGURACION (`OpcionMenu`).
+- `PantallaConfiguracion` con cuatro categorías: SONIDO (volumen de música y de efectos de 0 a 100), PANTALLA (modo ventana o pantalla completa y resolución, con opción recomendada), CONTROLES (muestra los controles de ambos jugadores) y CREDITOS (vacía por ahora). Incluye el logo del programa.
+- `Personaje` (enum con nombre y spritesheets de cada personaje) y `EventosJugador` (interfaz para avisar saltos, golpes y eliminaciones).
+- `NavegadorPantallas` (interfaz) para cambiar de pantalla sin acceso global a `Principal`.
+- `Config`: constantes generales (tamaño del mundo, escala de Box2D, gravedad, paso de física y filtros de colisión).
+- `DetectorSuelo`: `ContactListener` de Box2D que informa cuándo los pies de un jugador tocan una plataforma.
+
+### Cambiado
+
+- `Principal` crea y libera los recursos compartidos (`SpriteBatch` y audio) y aplica los cambios de pantalla al final de cada frame, liberando la pantalla anterior con `dispose()`.
+- Las constantes de `Recursos` pasan a MAYÚSCULAS_CON_GUIONES y los atributos tienen visibilidad explícita.
+- `Imagen`, `Texto`, `Jugador`, `Hud` y las pantallas liberan los recursos que crean.
+- Se reemplaza `EntradaJugador` (paquete `Controles`) por el nuevo sistema del paquete `Entradas`.
+- README actualizado con los integrantes, el estado actual del proyecto y las funciones planificadas por separado.
+
+
+## [0.2.6] - 2026-10-01
+
+### Añadido
+- Implementación de un sensor de suelo mediante fixtures de tipo sensor en Box2D para detectar el contacto de los jugadores con las plataformas.
+
+- Incorporación de un contador de contactos de suelo para gestionar correctamente el estado de apoyo de cada jugador.
+
+- Creación de la clase EntradaJugador dentro del paquete Controles, encargada de gestionar las entradas de teclado de ambos jugadores.
+
+### Cambiado
+- Refactorización del procesamiento de movimiento en Jugador para delegar la lectura de las teclas a la clase EntradaJugador, separando la gestión de entradas de la lógica del personaje.
+
+- Adaptación del sistema de salto para utilizar la detección de contacto con el suelo y permitir saltar únicamente cuando el jugador está apoyado sobre una plataforma.
+
+### Corregido
+- Corrección de la condición lógica del salto que impedía realizarlo correctamente al estar sobre una plataforma.
+
 ## [0.2.5] - 2026-09-04
 
 ### Añadido

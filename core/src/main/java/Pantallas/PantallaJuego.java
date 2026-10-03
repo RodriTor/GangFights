@@ -1,163 +1,200 @@
 package Pantallas;
 
-import Entidades.Entidad;
+import Audio.Efecto;
+import Audio.GestorAudio;
+import Audio.Musica;
+import Elementos.Hud;
+import Entidades.EventosJugador;
 import Entidades.Jugador;
+import Entidades.Personaje;
+import Entradas.ControlAudio;
+import Entradas.ControlTeclado;
+import Interfaces.NavegadorPantallas;
+import Logica.EstadoPartida;
+import Logica.Partida;
+import Mundo.DetectorSuelo;
 import Mundo.Mapa;
-import Mundo.Plataforma;
-import Utilidades.Recursos;
+import Utilidades.Config;
 import Utilidades.Render;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
 
-import static Utilidades.Render.batch;
+public class PantallaJuego implements Screen, EventosJugador {
 
-public class PantallaJuego implements Screen {
+    private static final float TIEMPO_TRANSICION = 2.5f;
 
-	private ShapeRenderer shapeRenderer;
-	private OrthographicCamera camara;
+    private final NavegadorPantallas navegador;
+    private final GestorAudio audio;
+    private final ControlAudio controlAudio;
 
-	private World mundo;
-	private Mapa mapa;
-	private Jugador jugador;
+    private OrthographicCamera camara;
+    private Viewport viewport;
+    private ShapeRenderer shapeRenderer;
+    private World mundo;
+    private Mapa mapa;
+    private Jugador jugador1;
     private Jugador jugador2;
+    private Partida partida;
+    private Hud hud;
 
+    private float acumuladorFisica = 0f;
+    private float tiempoTransicion = 0f;
 
-	private final float ancho_mundo = 1280;
-	private final float alto_mundo = 720;
+    public PantallaJuego(NavegadorPantallas navegador, GestorAudio audio) {
+        this.navegador = navegador;
+        this.audio = audio;
+        this.controlAudio = new ControlAudio(audio);
+    }
 
+    @Override
+    public void show() {
+        camara = new OrthographicCamera();
+        viewport = new FitViewport(Config.ANCHO_MUNDO, Config.ALTO_MUNDO, camara);
+        shapeRenderer = new ShapeRenderer();
 
+        mundo = new World(new Vector2(0, Config.GRAVEDAD), true);
+        mundo.setContactListener(new DetectorSuelo());
+        mapa = new Mapa(mundo);
 
+        jugador1 = new Jugador(mundo, 230, 300, Personaje.JASINSKI, ControlTeclado.crearJugador1(), true);
+        jugador2 = new Jugador(mundo, 1050, 300, Personaje.SCHEPIS, ControlTeclado.crearJugador2(), false);
+        jugador1.setOyente(this);
+        jugador2.setOyente(this);
 
-	@Override
-	public void show() {
-		shapeRenderer = new ShapeRenderer();
+        partida = new Partida(Personaje.JASINSKI.getNombre(), Personaje.SCHEPIS.getNombre());
+        hud = new Hud();
 
-
-		camara = new OrthographicCamera(ancho_mundo, alto_mundo);
-
-		camara.position.set(ancho_mundo / 2f, alto_mundo / 2f, 0);
-
-		camara.update();
-
-        mundo = new World(new Vector2(0, -40f), true);
-		mapa = new Mapa(mundo);
-
-        jugador = new Jugador(
-            mundo, 640, 300, 1,
-            Recursos.JasinskiQUieto,
-            Recursos.JasinskiAgachado,
-            Recursos.JasinskiCorrer,
-            Recursos.JasinskiSaltar,
-            Recursos.JasinskiGolpeMano
-        );
-
-        jugador2 = new Jugador(
-            mundo, 700, 300, 2,
-            Recursos.SchepisQuieto,
-            Recursos.SchepisAgachado,
-            Recursos.SchepisCorrer,
-            Recursos.SchepisSaltar,
-            Recursos.SchepisGolpeMano
-        );
+        audio.reproducirMusica(Musica.JUEGO);
     }
 
 
-	@Override
+    @Override
     public void render(float delta) {
+        controlAudio.actualizar();
+        procesarTeclasDePantalla();
 
-        jugador.actualizar(delta);
+        if (partida.getEstado() != EstadoPartida.PAUSADA) {
+            actualizarJuego(delta);
+        }
+
+        dibujarMundo();
+        hud.actualizar(partida, audio);
+        hud.dibujar();
+    }
+
+    private void procesarTeclasDePantalla() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+            partida.alternarPausa();
+        }
+        if (partida.getEstado() == EstadoPartida.PAUSADA && Gdx.input.isKeyJustPressed(Input.Keys.Q)) {
+            navegador.irAMenu();
+        }
+    }
+
+    private void actualizarJuego(float delta) {
+        jugador1.actualizar(delta);
         jugador2.actualizar(delta);
 
-        jugador.comprobarAtaque(jugador2);
-        jugador2.comprobarAtaque(jugador);
+        if (partida.getEstado() == EstadoPartida.EN_CURSO) {
+            jugador1.comprobarAtaque(jugador2);
+            jugador2.comprobarAtaque(jugador1);
+            verificarFinDeRonda();
+        } else {
+            avanzarTransicion(delta);
+        }
 
-        // actualizamos la fisica
-        mundo.step(1 / 60f, 6, 2);
+        avanzarFisica(delta);
+    }
 
-        Gdx.gl.glClearColor(0.1f, 0.1f, 0.1f, 1);
-        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+    private void avanzarFisica(float delta) {
+        acumuladorFisica += Math.min(delta, Config.MAXIMO_DELTA);
+        while (acumuladorFisica >= Config.PASO_FISICA) {
+            mundo.step(Config.PASO_FISICA, Config.ITERACIONES_VELOCIDAD, Config.ITERACIONES_POSICION);
+            acumuladorFisica -= Config.PASO_FISICA;
+        }
+    }
 
+    private void verificarFinDeRonda() {
+        if (!jugador1.isActivo()) {
+            partida.terminarRonda(1);
+        } else if (!jugador2.isActivo()) {
+            partida.terminarRonda(0);
+        }
+    }
+
+    private void avanzarTransicion(float delta) {
+        tiempoTransicion += delta;
+        if (tiempoTransicion < TIEMPO_TRANSICION) return;
+
+        tiempoTransicion = 0f;
+        if (partida.getEstado() == EstadoPartida.FINALIZADA) {
+            navegador.irAFinal(partida);
+        } else {
+            partida.siguienteRonda();
+            jugador1.reaparecer();
+            jugador2.reaparecer();
+        }
+    }
+
+    private void dibujarMundo() {
+        Render.limpiarPantalla(0, 0, 0);
+        viewport.apply();
         camara.update();
 
-        // esto hace que shaperender use nuestra camara
         shapeRenderer.setProjectionMatrix(camara.combined);
-
         shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-
-        for(Plataforma plataforma : mapa.getPlataformas()) {
-            shapeRenderer.rect(plataforma.getX(), plataforma.getY(), plataforma.getAncho(), plataforma.getAlto());
-        }
-
-        // PROTECCIÓN CONTRA NULOS: Solo obtenemos la posición si el jugador sigue activo y su cuerpo no es nulo
-        if (jugador.isActivo() && jugador.getCuerpo() != null) {
-            float jugadorX = jugador.getCuerpo().getPosition().x * 10f;
-            float jugadorY = jugador.getCuerpo().getPosition().y * 10f;
-        }
-
+        shapeRenderer.setColor(0.1f, 0.1f, 0.1f, 1f);
+        shapeRenderer.rect(0, 0, Config.ANCHO_MUNDO, Config.ALTO_MUNDO);
+        shapeRenderer.setColor(0.6f, 0.6f, 0.65f, 1f);
+        mapa.dibujar(shapeRenderer);
         shapeRenderer.end();
 
         Render.comenzarBatch(camara);
-
-        if (jugador.isActivo() && jugador.getCuerpo() != null) {
-            TextureRegion frameJasinski = jugador.getFrameActual();
-            if (frameJasinski != null) {
-                float posX = (jugador.getCuerpo().getPosition().x * 10f) - (jugador.getAncho() / 2f);
-                float posY = (jugador.getCuerpo().getPosition().y * 10f) - (jugador.getAlto() / 2f);
-                batch.draw(frameJasinski, posX, posY, jugador.getAncho(), jugador.getAlto());
-            }
-        }
-
-        if (jugador2.isActivo() && jugador2.getCuerpo() != null) {
-            TextureRegion frameJugador2 = jugador2.getFrameActual();
-            if (frameJugador2 != null) {
-                float posX2 = (jugador2.getCuerpo().getPosition().x * 10f) - (jugador2.getAncho() / 2f);
-                float posY2 = (jugador2.getCuerpo().getPosition().y * 10f) - (jugador2.getAlto() / 2f);
-                batch.draw(frameJugador2, posX2, posY2, jugador2.getAncho(), jugador2.getAlto());
-            }
-        }
-
+        jugador1.dibujar();
+        jugador2.dibujar();
         Render.terminarBatch();
     }
 
-	@Override
 
-	public void resize(int width, int height) {
-		camara.viewportWidth = ancho_mundo;
-		camara.viewportHeight = alto_mundo;
-		camara.update();
-	}
+    @Override
+    public void alSaltar() {
+        audio.reproducirEfecto(Efecto.SALTO);
+    }
 
-	@Override
-	public void pause() {
+    @Override
+    public void alGolpear() {
+        audio.reproducirEfecto(Efecto.GOLPE);
+    }
 
-	}
-
-	@Override
-	public void resume() {
-
-	}
-
-	@Override
-	public void hide() {
-
-	}
-
-	@Override
-	public void dispose() {
-		if(shapeRenderer != null) {
-			shapeRenderer.dispose();
-		}
-
-		if(mundo != null) {
-			mundo.dispose();
-		}
-	}
+    @Override
+    public void alSerEliminado() {
+        audio.reproducirEfecto(Efecto.ELIMINACION);
+    }
 
 
+    @Override
+    public void resize(int width, int height) {
+        viewport.update(width, height, true);
+        hud.redimensionar(width, height);
+    }
+
+    @Override public void pause() { }
+    @Override public void resume() { }
+    @Override public void hide() { }
+
+    @Override
+    public void dispose() {
+        if (hud != null) hud.dispose();
+        if (jugador1 != null) jugador1.dispose();
+        if (jugador2 != null) jugador2.dispose();
+        if (shapeRenderer != null) shapeRenderer.dispose();
+        if (mundo != null) mundo.dispose();
+    }
 }

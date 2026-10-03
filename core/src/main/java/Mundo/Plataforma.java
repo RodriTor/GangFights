@@ -1,66 +1,50 @@
 package Mundo;
 
+import Utilidades.Config;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
-import com.badlogic.gdx.physics.box2d.FixtureDef;
 public class Plataforma {
-	private Body cuerpo;
 
-	private float x;
-	private float y;
-	private float ancho;
-	private float alto;
+    private final float x;
+    private final float y;
+    private final float ancho;
+    private final float alto;
 
-	private float escala = 10f;
-
-	public Plataforma(World mundo, float x, float y, float ancho, float alto) {
-		this.x = x;
-		this.y = y;
-		this.ancho = ancho;
-		this.alto = alto;
-		crearCuerpo(mundo);
-	}
+    public Plataforma(World mundo, float x, float y, float ancho, float alto) {
+        this.x = x;
+        this.y = y;
+        this.ancho = ancho;
+        this.alto = alto;
+        crearCuerpo(mundo);
+    }
 
     private void crearCuerpo(World mundo) {
         BodyDef cuerpoDef = new BodyDef();
         cuerpoDef.type = BodyDef.BodyType.StaticBody;
+        cuerpoDef.position.set((x + ancho / 2f) / Config.PIXELES_POR_METRO,
+                               (y + alto / 2f) / Config.PIXELES_POR_METRO);
 
-        float centroX = (x + ancho / 2f) / escala;
-        float centroY = (y + alto / 2f) / escala;
-        cuerpoDef.position.set(centroX, centroY);
-
-        cuerpo = mundo.createBody(cuerpoDef);
+        Body cuerpo = mundo.createBody(cuerpoDef);
 
         PolygonShape forma = new PolygonShape();
-        forma.setAsBox((ancho/2f)/escala, (alto/2f) / escala);
+        forma.setAsBox((ancho / 2f) / Config.PIXELES_POR_METRO, (alto / 2f) / Config.PIXELES_POR_METRO);
 
-        com.badlogic.gdx.physics.box2d.FixtureDef fixtureDef = new com.badlogic.gdx.physics.box2d.FixtureDef();
+        FixtureDef fixtureDef = new FixtureDef();
         fixtureDef.shape = forma;
         fixtureDef.density = 0f;
-        fixtureDef.filter.categoryBits = 0x0001;
-        fixtureDef.filter.maskBits = -1;
+        fixtureDef.filter.categoryBits = Config.CATEGORIA_PLATAFORMA;
+        fixtureDef.filter.maskBits = Config.MASCARA_TODOS;
 
         cuerpo.createFixture(fixtureDef);
         forma.dispose();
     }
 
-	public float getX() {
-		return x;
-	}
-
-	public float getY() {
-		return y;
-	}
-
-
-	public float getAncho() {
-		return ancho;
-	}
-
-	public float getAlto() {
-		return alto;
-	}
+    public void dibujar(ShapeRenderer shapeRenderer) {
+        shapeRenderer.rect(x, y, ancho, alto);
+    }
 }

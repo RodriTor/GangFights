@@ -1,117 +1,148 @@
 package Pantallas;
 
-import com.badlogic.gdx.graphics.Color;
+import Audio.Efecto;
+import Audio.GestorAudio;
+import Audio.Musica;
 import Elementos.Imagen;
 import Elementos.Texto;
+import Entradas.ControlAudio;
+import Interfaces.NavegadorPantallas;
+import Utilidades.Config;
 import Utilidades.Recursos;
 import Utilidades.Render;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Cursor;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.Viewport;
+
 
 public class MenuInicial implements Screen {
 
-    Texto play;
-    Imagen menuInicial;
-    SpriteBatch b;
+    private static final float PRIMERA_OPCION_Y = 120f;   // borde superior del texto
+    private static final float SEPARACION = 45f;
+    private static final float ESCALA_SELECCIONADA = 1.4f;
+    private static final float ESCALA_NORMAL = 1.0f;
 
-    private float tiempo = 0;
+    private final NavegadorPantallas navegador;
+    private final GestorAudio audio;
+    private final ControlAudio controlAudio;
+    private final OpcionMenu[] opciones = OpcionMenu.values();
+    private final Texto[] textos = new Texto[opciones.length];
 
-    BitmapFont fuente;
-    GlyphLayout glyphLayout;
+    private OrthographicCamera camara;
+    private Viewport viewport;
+    private Imagen fondo;
+    private Texto ayudaAudio;
+
+    private int seleccion = 0;
+
+    public MenuInicial(NavegadorPantallas navegador, GestorAudio audio) {
+        this.navegador = navegador;
+        this.audio = audio;
+        this.controlAudio = new ControlAudio(audio);
+    }
 
     @Override
     public void show() {
+        camara = new OrthographicCamera();
+        viewport = new FitViewport(Config.ANCHO_MUNDO, Config.ALTO_MUNDO, camara);
 
-        menuInicial = new Imagen(Recursos.MENUINICIAL);
-        b = Render.batch;
+        fondo = new Imagen(Recursos.MENU_INICIAL);
+        fondo.setTamanio(Config.ANCHO_MUNDO, Config.ALTO_MUNDO);
+        fondo.setPosicion(0, 0);
 
-        float centroX = (Gdx.graphics.getWidth() / 2f) - (menuInicial.getAncho() / 2f);
-        float centroY = (Gdx.graphics.getHeight() / 2f) - (menuInicial.getAlto() / 2f);
+        for (int i = 0; i < opciones.length; i++) {
+            textos[i] = new Texto(Recursos.FUENTE_MENU, 20, Color.WHITE);
+            textos[i].setTexto(opciones[i].getTexto());
+        }
 
-        menuInicial.setPosicion(centroX, centroY);
+        ayudaAudio = new Texto(Recursos.FUENTE_MENU, 16, Color.LIGHT_GRAY);
+        ayudaAudio.setTexto("ARRIBA / ABAJO: elegir    ENTER: seleccionar    M: silenciar");
+        ayudaAudio.setPosicion(20, 30);
 
-        play = new Texto(Recursos.FUENTE_MENU, 20, Color.YELLOW);
-        play.setTexto("PLAY");
+        // Se oculta el cursor: el menu solo se maneja con el teclado
+        Gdx.graphics.setSystemCursor(Cursor.SystemCursor.None);
 
-        float playX = (Gdx.graphics.getWidth() / 2f) - (play.getAncho() / 2f);
-        float playY = 85;
-        play.setPosicion(playX, playY);
-
+        audio.reproducirMusica(Musica.MENU);
+        actualizarAspectoOpciones();
     }
 
     @Override
     public void render(float delta) {
-        tiempo += delta;
-        Render.limpiarPantalla(0,0,0);
+        controlAudio.actualizar();
+        procesarTeclado();
 
-        float escala = 1.0f + 0.15f * (float) Math.sin(tiempo * 6);
-        play.getFuente().getData().setScale(escala);
+        Render.limpiarPantalla(0, 0, 0);
+        viewport.apply();
+        camara.update();
 
-        GlyphLayout layout = new GlyphLayout(play.getFuente(), play.getTexto());
-
-        float playX = (Gdx.graphics.getWidth() / 2f) - (layout.width / 2f);
-        float playY = 85;
-        play.setPosicion(playX, playY);
-
-        float mouseX = Gdx.input.getX();
-        float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY();
-
-
-        boolean sobreTexto = mouseX >= playX && mouseX <= playX + layout.width &&
-            mouseY >= playY - 10 && mouseY <= playY + layout.height + 10;
-
-
-        if (sobreTexto) {
-            Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Hand);
-
-            if (Gdx.input.justTouched()) {
-                    Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
-                    Render.juego.setScreen(new PantallaJuego());
-            }
-        } else {
-            Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
+        Render.comenzarBatch(camara);
+        fondo.dibujar();
+        for (Texto texto : textos) {
+            texto.dibujar();
         }
+        ayudaAudio.dibujar();
+        Render.terminarBatch();
+    }
 
-        b.begin();
-        menuInicial.dibujar();
+    private void procesarTeclado() {
+        if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+            seleccion = (seleccion - 1 + opciones.length) % opciones.length;
+            audio.reproducirEfecto(Efecto.CLICK);
+            actualizarAspectoOpciones();
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
+            seleccion = (seleccion + 1) % opciones.length;
+            audio.reproducirEfecto(Efecto.CLICK);
+            actualizarAspectoOpciones();
+        } else if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+            audio.reproducirEfecto(Efecto.CLICK);
+            ejecutarOpcion(opciones[seleccion]);
+        }
+    }
 
+    private void ejecutarOpcion(OpcionMenu opcion) {
+        switch (opcion) {
+            case PLAY:
+                navegador.irAJuego();
+                break;
+            case CONFIGURACION:
+                navegador.irAConfiguracion();
+                break;
+        }
+    }
 
-
-        play.dibujar();
-        b.end();
-
-
-        if(Gdx.input.justTouched()) {
-            Render.juego.setScreen(new PantallaJuego());
+    private void actualizarAspectoOpciones() {
+        for (int i = 0; i < textos.length; i++) {
+            boolean elegida = (i == seleccion);
+            textos[i].setEscala(elegida ? ESCALA_SELECCIONADA : ESCALA_NORMAL);
+            textos[i].setColor(elegida ? Color.YELLOW : Color.WHITE);
+            textos[i].centrarEn(Config.ANCHO_MUNDO / 2f, PRIMERA_OPCION_Y - i * SEPARACION);
         }
     }
 
     @Override
     public void resize(int width, int height) {
-
+        viewport.update(width, height, true);
     }
 
-    @Override
-    public void pause() {
-
-    }
-
-    @Override
-    public void resume() {
-
-    }
+    @Override public void pause() { }
+    @Override public void resume() { }
 
     @Override
     public void hide() {
-
+        Gdx.graphics.setSystemCursor(Cursor.SystemCursor.Arrow);
     }
 
     @Override
     public void dispose() {
-
+        if (fondo != null) fondo.dispose();
+        if (ayudaAudio != null) ayudaAudio.dispose();
+        for (Texto texto : textos) {
+            if (texto != null) texto.dispose();
+        }
     }
 }

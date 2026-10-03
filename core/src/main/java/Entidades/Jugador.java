@@ -1,235 +1,283 @@
 package Entidades;
 
+import Entradas.Accion;
+import Entradas.ControlJugador;
+import Utilidades.Config;
+import Utilidades.Render;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Animation;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
+import com.badlogic.gdx.physics.box2d.FixtureDef;
 import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
+import java.util.ArrayList;
+
 public class Jugador extends Entidad {
-    private Body cuerpo;
-    private World mundo;
-
-    private Texture hojaQuieto;
-    private Texture hojaAgachado;
-    private Texture hojaCorrer;
-    private Texture hojaSalto;
-    private Texture hojaGolpe; // NUEVO
-
-    private Animation<TextureRegion> animacionQuieto;
-    private Animation<TextureRegion> animacionAgachado;
-    private Animation<TextureRegion> animacionCorrer;
-    private Animation<TextureRegion> animacionGolpe; // NUEVO (el golpe tiene 2 frames)
-    private TextureRegion regionSalto;
-
-    private float tiempoAnimacion;
-    private float tiempoGolpe = 0; // NUEVO
 
     private static final int ANCHO_FRAME = 32;
     private static final int ALTO_FRAME = 42;
 
-    private int idJugador;
-    private float escala = 10f;
+    private static final float ANCHO_CUERPO = 40f;
+    private static final float ALTO_CUERPO = 80f;
 
-    private boolean estaAgachado = false;
-    private boolean estaCorriendo = false;
-    private boolean estaSaltando = false;
-    private boolean estaGolpeando = false; // NUEVO
-    private boolean mirandoDerecha = true;
-    private boolean activo = true; // NUEVO (para saber si sigue en juego)
+    private static final float VELOCIDAD = 13f;
+    private static final float VELOCIDAD_SALTO = 12f;
 
-    public Jugador(World mundo, float x, float y, int idJugador, String rutaQuieto, String rutaAgachado, String rutaCorrer, String rutaSalto, String rutaGolpe) {
-        super(x, y, 40, 80);
+    private static final float RANGO_GOLPE_X = 3.0f;
+    private static final float RANGO_GOLPE_Y = 2.0f;
+
+    private static final float MITAD_GROSOR_SENSOR = 0.2f;
+
+    private final World mundo;
+    private final Personaje personaje;
+    private final ControlJugador control;
+    private final float spawnX;
+    private final float spawnY;
+    private final boolean mirandoDerechaInicial;
+    private final ArrayList<Texture> texturas = new ArrayList<>();
+
+    private Body cuerpo;
+    private EventosJugador oyente;
+
+    private Animation<TextureRegion> animacionQuieto;
+    private Animation<TextureRegion> animacionAgachado;
+    private Animation<TextureRegion> animacionCorrer;
+    private Animation<TextureRegion> animacionGolpe;
+    private TextureRegion regionSalto;
+
+    private float tiempoAnimacion;
+    private float tiempoGolpe;
+
+    private int contactosSuelo = 0;
+
+    private boolean estaAgachado;
+    private boolean estaCorriendo;
+    private boolean estaSaltando;
+    private boolean estaGolpeando;
+    private boolean mirandoDerecha;
+    private boolean activo = true;
+
+    public Jugador(World mundo, float x, float y, Personaje personaje, ControlJugador control,
+                   boolean mirandoDerecha) {
+        super(x, y, ANCHO_CUERPO, ALTO_CUERPO);
         this.mundo = mundo;
-        this.idJugador = idJugador;
+        this.personaje = personaje;
+        this.control = control;
+        this.spawnX = x;
+        this.spawnY = y;
+        this.mirandoDerechaInicial = mirandoDerecha;
+        this.mirandoDerecha = mirandoDerecha;
 
         crearCuerpo();
-        tiempoAnimacion = 0f;
-
-        spriteQuieto(rutaQuieto);
-        spriteAgachado(rutaAgachado);
-        spriteCorrer(rutaCorrer);
-        spriteSalto(rutaSalto);
-        spriteGolpe(rutaGolpe); // NUEVO
+        cargarAnimaciones();
     }
 
-    private void spriteQuieto(String ruta) {
-        hojaQuieto = new Texture(Gdx.files.internal(ruta));
-        TextureRegion[][] division = TextureRegion.split(hojaQuieto, ANCHO_FRAME, ALTO_FRAME);
-        animacionQuieto = new Animation<>(0.15f, division[0][0], division[0][1], division[1][0]);
+    private TextureRegion[][] cargarHoja(String ruta) {
+        Texture hoja = new Texture(Gdx.files.internal(ruta));
+        texturas.add(hoja);
+        return TextureRegion.split(hoja, ANCHO_FRAME, ALTO_FRAME);
+    }
+
+    private void cargarAnimaciones() {
+        TextureRegion[][] quieto = cargarHoja(personaje.getRutaQuieto());
+        animacionQuieto = new Animation<>(0.15f, quieto[0][0], quieto[0][1], quieto[1][0]);
         animacionQuieto.setPlayMode(Animation.PlayMode.LOOP);
-    }
 
-    private void spriteAgachado(String ruta) {
-        hojaAgachado = new Texture(Gdx.files.internal(ruta));
-        TextureRegion[][] division = TextureRegion.split(hojaAgachado, ANCHO_FRAME, ALTO_FRAME);
-        animacionAgachado = new Animation<>(0.15f, division[0][0]);
-        animacionAgachado.setPlayMode(Animation.PlayMode.NORMAL);
-    }
+        TextureRegion[][] agachado = cargarHoja(personaje.getRutaAgachado());
+        animacionAgachado = new Animation<>(0.15f, agachado[0][0]);
 
-    private void spriteCorrer(String ruta) {
-        hojaCorrer = new Texture(Gdx.files.internal(ruta));
-        TextureRegion[][] division = TextureRegion.split(hojaCorrer, ANCHO_FRAME, ALTO_FRAME);
-        animacionCorrer = new Animation<>(0.10f, division[0][0], division[0][1], division[1][0]);
+        TextureRegion[][] correr = cargarHoja(personaje.getRutaCorrer());
+        animacionCorrer = new Animation<>(0.10f, correr[0][0], correr[0][1], correr[1][0]);
         animacionCorrer.setPlayMode(Animation.PlayMode.LOOP);
-    }
 
-    private void spriteSalto(String ruta) {
-        hojaSalto = new Texture(Gdx.files.internal(ruta));
-        TextureRegion[][] division = TextureRegion.split(hojaSalto, ANCHO_FRAME, ALTO_FRAME);
-        regionSalto = division[0][0];
-    }
+        regionSalto = cargarHoja(personaje.getRutaSalto())[0][0];
 
-    // NUEVO: Cargar sprite de golpe (64x42 significa 2 frames de 32x42)
-    private void spriteGolpe(String ruta) {
-        hojaGolpe = new Texture(Gdx.files.internal(ruta));
-        TextureRegion[][] division = TextureRegion.split(hojaGolpe, ANCHO_FRAME, ALTO_FRAME);
-        animacionGolpe = new Animation<>(0.4f, division[0][0], division[0][1]);
+        TextureRegion[][] golpe = cargarHoja(personaje.getRutaGolpe());
+        animacionGolpe = new Animation<>(0.4f, golpe[0][0], golpe[0][1]);
         animacionGolpe.setPlayMode(Animation.PlayMode.NORMAL);
     }
 
     private void crearCuerpo() {
         BodyDef cuerpoDef = new BodyDef();
         cuerpoDef.type = BodyDef.BodyType.DynamicBody;
-        cuerpoDef.position.set(getX() / escala, getY() / escala);
+        cuerpoDef.position.set(getX() / Config.PIXELES_POR_METRO, getY() / Config.PIXELES_POR_METRO);
         cuerpoDef.fixedRotation = true;
-
         cuerpo = mundo.createBody(cuerpoDef);
 
+        float mitadAncho = (getAncho() / 2f) / Config.PIXELES_POR_METRO;
+        float mitadAlto = (getAlto() / 2f) / Config.PIXELES_POR_METRO;
+
         PolygonShape forma = new PolygonShape();
-        forma.setAsBox((getAncho() / 2f) / escala, (getAlto() / 2f) / escala);
+        forma.setAsBox(mitadAncho, mitadAlto);
 
-        com.badlogic.gdx.physics.box2d.FixtureDef fixtureDef = new com.badlogic.gdx.physics.box2d.FixtureDef();
-        fixtureDef.shape = forma;
-        fixtureDef.density = 1.0f;
-        fixtureDef.friction = 0.2f;
-        fixtureDef.filter.categoryBits = 0x0002;
-        fixtureDef.filter.maskBits = 0x0001;
+        FixtureDef fixtureCuerpo = new FixtureDef();
+        fixtureCuerpo.shape = forma;
+        fixtureCuerpo.density = 1.0f;
+        fixtureCuerpo.friction = 0.2f;
+        fixtureCuerpo.filter.categoryBits = Config.CATEGORIA_JUGADOR;
+        fixtureCuerpo.filter.maskBits = Config.CATEGORIA_PLATAFORMA;
+        cuerpo.createFixture(fixtureCuerpo);
 
-        cuerpo.createFixture(fixtureDef);
+        forma.setAsBox(mitadAncho * 0.8f, MITAD_GROSOR_SENSOR, new Vector2(0, -mitadAlto), 0f);
+
+        FixtureDef fixtureSensor = new FixtureDef();
+        fixtureSensor.shape = forma;
+        fixtureSensor.isSensor = true;
+        fixtureSensor.filter.categoryBits = Config.CATEGORIA_JUGADOR;
+        fixtureSensor.filter.maskBits = Config.CATEGORIA_PLATAFORMA;
+        cuerpo.createFixture(fixtureSensor).setUserData(this);
+
         forma.dispose();
+    }
+
+
+    public void sumarContactoSuelo() {
+        contactosSuelo++;
+    }
+
+    public void restarContactoSuelo() {
+        contactosSuelo = Math.max(0, contactosSuelo - 1);
+    }
+
+    public boolean estaEnSuelo() {
+        return contactosSuelo > 0;
+    }
+
+
+    public void setOyente(EventosJugador oyente) {
+        this.oyente = oyente;
     }
 
     @Override
     public void actualizar(float delta) {
         if (!activo) return;
+
         tiempoAnimacion += delta;
 
         if (estaGolpeando) {
             tiempoGolpe += delta;
             if (animacionGolpe.isAnimationFinished(tiempoGolpe)) {
-                estaGolpeando = false; // Termina la animación de golpe
+                estaGolpeando = false;
             }
         }
 
-        procesarMovimiento();
+        procesarAcciones();
+
+        Vector2 posicion = cuerpo.getPosition();
+        setPosicion(posicion.x * Config.PIXELES_POR_METRO, posicion.y * Config.PIXELES_POR_METRO);
     }
 
-    private void procesarMovimiento() {
-        float velocidad = 13f;
-        Vector2 velocidadActual = cuerpo.getLinearVelocity();
-
-        boolean teclaAbajo, teclaIzquierda, teclaDerecha, teclaSalto, teclaGolpe;
-
-        if (idJugador == 1) {
-            teclaAbajo = Gdx.input.isKeyPressed(Input.Keys.S);
-            teclaIzquierda = Gdx.input.isKeyPressed(Input.Keys.A);
-            teclaDerecha = Gdx.input.isKeyPressed(Input.Keys.D);
-            teclaSalto = Gdx.input.isKeyJustPressed(Input.Keys.W);
-            teclaGolpe = Gdx.input.isKeyJustPressed(Input.Keys.NUM_1); // Tecla '1'
-        } else {
-            teclaAbajo = Gdx.input.isKeyPressed(Input.Keys.DOWN);
-            teclaIzquierda = Gdx.input.isKeyPressed(Input.Keys.LEFT);
-            teclaDerecha = Gdx.input.isKeyPressed(Input.Keys.RIGHT);
-            teclaSalto = Gdx.input.isKeyJustPressed(Input.Keys.UP);
-            teclaGolpe = Gdx.input.isKeyJustPressed(Input.Keys.N); // Tecla 'N'
-        }
+    private void procesarAcciones() {
+        float velocidadY = cuerpo.getLinearVelocity().y;
+        estaSaltando = !estaEnSuelo();
 
         if (estaGolpeando) {
-            cuerpo.setLinearVelocity(0, velocidadActual.y);
+            cuerpo.setLinearVelocity(0, velocidadY);
             return;
         }
 
-        if (teclaGolpe) {
+        if (control.fuePresionada(Accion.GOLPEAR)) {
             estaGolpeando = true;
+            estaCorriendo = false;
             tiempoGolpe = 0f;
-            cuerpo.setLinearVelocity(0, velocidadActual.y);
+            cuerpo.setLinearVelocity(0, velocidadY);
+            if (oyente != null) oyente.alGolpear();
             return;
         }
 
-        estaSaltando = Math.abs(velocidadActual.y) > 0.1f;
-
-        if (teclaAbajo && !estaSaltando) {
+        if (control.estaPresionada(Accion.AGACHAR) && !estaSaltando) {
             estaAgachado = true;
             estaCorriendo = false;
-            cuerpo.setLinearVelocity(0, velocidadActual.y);
+            cuerpo.setLinearVelocity(0, velocidadY);
             return;
-        } else {
-            estaAgachado = false;
         }
+        estaAgachado = false;
 
-        if (teclaIzquierda) {
-            cuerpo.setLinearVelocity(-velocidad, velocidadActual.y);
-            if (!estaSaltando) estaCorriendo = true;
+        if (control.estaPresionada(Accion.IZQUIERDA)) {
+            cuerpo.setLinearVelocity(-VELOCIDAD, velocidadY);
+            estaCorriendo = !estaSaltando;
             mirandoDerecha = false;
-        } else if (teclaDerecha) {
-            cuerpo.setLinearVelocity(velocidad, velocidadActual.y);
-            if (!estaSaltando) estaCorriendo = true;
+        } else if (control.estaPresionada(Accion.DERECHA)) {
+            cuerpo.setLinearVelocity(VELOCIDAD, velocidadY);
+            estaCorriendo = !estaSaltando;
             mirandoDerecha = true;
         } else {
-            cuerpo.setLinearVelocity(0, velocidadActual.y);
+            cuerpo.setLinearVelocity(0, velocidadY);
             estaCorriendo = false;
         }
 
-        if (teclaSalto && !estaSaltando) {
-            cuerpo.setLinearVelocity(velocidadActual.x, 12f);
+        if (control.fuePresionada(Accion.SALTAR) && !estaSaltando) {
+            cuerpo.setLinearVelocity(cuerpo.getLinearVelocity().x, VELOCIDAD_SALTO);
             estaSaltando = true;
             estaCorriendo = false;
+            if (oyente != null) oyente.alSaltar();
         }
     }
 
     public void comprobarAtaque(Jugador rival) {
-        if (!this.estaGolpeando || !rival.isActivo() || rival.getCuerpo() == null || this.cuerpo == null) return;
+        if (!estaGolpeando || !activo || !rival.isActivo()) return;
 
-        Vector2 pos1 = this.cuerpo.getPosition();
-        Vector2 pos2 = rival.getCuerpo().getPosition();
+        Vector2 miPosicion = cuerpo.getPosition();
+        Vector2 posicionRival = rival.cuerpo.getPosition();
 
-        float distanciaX = Math.abs(pos1.x - pos2.x);
-        float distanciaY = Math.abs(pos1.y - pos2.y);
+        float diferenciaX = posicionRival.x - miPosicion.x;
+        float distanciaY = Math.abs(posicionRival.y - miPosicion.y);
 
-        // Ampliamos levemente el rango a 3.0f para asegurar el impacto al estar juntos
-        float rangoGolpeX = 3.0f;
-        float rangoGolpeY = 2.0f;
+        boolean rivalDeFrente = mirandoDerecha ? diferenciaX > -0.5f : diferenciaX < 0.5f;
 
-        if (distanciaX < rangoGolpeX && distanciaY < rangoGolpeY) {
-            System.out.println("¡Impacto registrado del Jugador " + idJugador + "!");
+        if (rivalDeFrente && Math.abs(diferenciaX) < RANGO_GOLPE_X && distanciaY < RANGO_GOLPE_Y) {
             rival.eliminar();
         }
     }
 
-
     public void eliminar() {
-        this.activo = false;
-        // Opcional: destruir el cuerpo físico de Box2D para que deje de interactuar
-        if (cuerpo != null && cuerpo.getWorld() != null) {
-            cuerpo.getWorld().destroyBody(cuerpo);
-            cuerpo = null;
+        if (!activo) return;
+        activo = false;
+        mundo.destroyBody(cuerpo);
+        cuerpo = null;
+        contactosSuelo = 0;
+        if (oyente != null) oyente.alSerEliminado();
+    }
+
+    public void reaparecer() {
+        if (cuerpo != null) {
+            mundo.destroyBody(cuerpo);
         }
+        contactosSuelo = 0;
+        setPosicion(spawnX, spawnY);
+        crearCuerpo();
+
+        activo = true;
+        estaAgachado = false;
+        estaCorriendo = false;
+        estaSaltando = false;
+        estaGolpeando = false;
+        mirandoDerecha = mirandoDerechaInicial;
+        tiempoAnimacion = 0f;
+        tiempoGolpe = 0f;
     }
 
     public boolean isActivo() {
         return activo;
     }
 
-    @Override
-    public void dibujar() {}
 
-    public TextureRegion getFrameActual() {
+    @Override
+    public void dibujar() {
+        if (!activo) return;
+
+        TextureRegion frame = obtenerFrameActual();
+        float posX = getX() - getAncho() / 2f;
+        float posY = getY() - getAlto() / 2f;
+        Render.batch.draw(frame, posX, posY, getAncho(), getAlto());
+    }
+
+    private TextureRegion obtenerFrameActual() {
         TextureRegion region;
 
         if (estaGolpeando) {
@@ -244,26 +292,16 @@ public class Jugador extends Entidad {
             region = animacionQuieto.getKeyFrame(tiempoAnimacion, true);
         }
 
-        if (region != null) {
-            if (!mirandoDerecha && !region.isFlipX()) {
-                region.flip(true, false);
-            } else if (mirandoDerecha && region.isFlipX()) {
-                region.flip(true, false);
-            }
+        if (region.isFlipX() == mirandoDerecha) {
+            region.flip(true, false);
         }
-
         return region;
     }
 
-    public Body getCuerpo() {
-        return cuerpo;
-    }
-
     public void dispose() {
-        if (hojaQuieto != null) hojaQuieto.dispose();
-        if (hojaAgachado != null) hojaAgachado.dispose();
-        if (hojaCorrer != null) hojaCorrer.dispose();
-        if (hojaSalto != null) hojaSalto.dispose();
-        if (hojaGolpe != null) hojaGolpe.dispose();
+        for (Texture textura : texturas) {
+            textura.dispose();
+        }
+        texturas.clear();
     }
 }
