@@ -1,15 +1,10 @@
 package Pantallas;
 
-<<<<<<< HEAD
 import Audio.Efecto;
 import Audio.GestorAudio;
 import Audio.Musica;
 import Elementos.Hud;
 import Entidades.EventosJugador;
-=======
-import Entidades.Entidad;
-
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
 import Entidades.Jugador;
 import Entidades.Personaje;
 import Entradas.ControlAudio;
@@ -28,15 +23,9 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.World;
-<<<<<<< HEAD
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
-=======
-import com.badlogic.gdx.physics.box2d.Contact;
-import com.badlogic.gdx.physics.box2d.ContactListener;
-import com.badlogic.gdx.physics.box2d.Fixture;
-import com.badlogic.gdx.physics.box2d.Manifold;
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
+
 
 public class PantallaJuego implements Screen, EventosJugador {
 
@@ -83,38 +72,7 @@ public class PantallaJuego implements Screen, EventosJugador {
         partida = new Partida(Personaje.JASINSKI.getNombre(), Personaje.SCHEPIS.getNombre());
         hud = new Hud();
 
-<<<<<<< HEAD
         audio.reproducirMusica(Musica.JUEGO);
-=======
-
-		camara = new OrthographicCamera(ancho_mundo, alto_mundo);
-
-		camara.position.set(ancho_mundo / 2f, alto_mundo / 2f, 0);
-
-		camara.update();
-
-        mundo = new World(new Vector2(0, -40f), true);
-		mapa = new Mapa(mundo);
-
-        jugador = new Jugador(
-            mundo, 640, 300, 1,
-            Recursos.JasinskiQUieto,
-            Recursos.JasinskiAgachado,
-            Recursos.JasinskiCorrer,
-            Recursos.JasinskiSaltar,
-            Recursos.JasinskiGolpeMano
-        );
-
-        jugador2 = new Jugador(
-            mundo, 700, 300, 2,
-            Recursos.SchepisQuieto,
-            Recursos.SchepisAgachado,
-            Recursos.SchepisCorrer,
-            Recursos.SchepisSaltar,
-            Recursos.SchepisGolpeMano
-        );
-        configurarContactos();
->>>>>>> 7e3714487eca11e21bfc212474b5d67a8594c434
     }
 
 
@@ -155,6 +113,7 @@ public class PantallaJuego implements Screen, EventosJugador {
 
         avanzarFisica(delta);
     }
+
 
     private void avanzarFisica(float delta) {
         acumuladorFisica += Math.min(delta, Config.MAXIMO_DELTA);
@@ -204,72 +163,6 @@ public class PantallaJuego implements Screen, EventosJugador {
         jugador2.dibujar();
         Render.terminarBatch();
     }
-	
-
-private void configurarContactos() {
-
-    mundo.setContactListener(new ContactListener() {
-
-        @Override
-        public void beginContact(Contact contacto) {
-            procesarContacto(contacto, true);
-        }
-
-        @Override
-        public void endContact(Contact contacto) {
-            procesarContacto(contacto, false);
-        }
-
-        @Override
-        public void preSolve(Contact contacto, Manifold manifold) {
-        }
-
-        @Override
-        public void postSolve(
-            Contact contacto,
-            com.badlogic.gdx.physics.box2d.ContactImpulse impulso
-        ) {
-        }
-    });
-}
-
-	private void procesarContacto(Contact contacto, boolean comenzar) {
-
-    Fixture fixtureA = contacto.getFixtureA();
-    Fixture fixtureB = contacto.getFixtureB();
-
-    detectarSensor(fixtureA, fixtureB, comenzar);
-    detectarSensor(fixtureB, fixtureA, comenzar);
-}
-
-	private void detectarSensor(
-			Fixture sensor,
-			Fixture otro,
-			boolean comenzar
-) {
-
-    if (!sensor.isSensor()) {
-        return;
-    }
-
-    if (!(sensor.getUserData() instanceof Jugador)) {
-        return;
-    }
-
-    if (otro.getFilterData().categoryBits != 0x0001) {
-        return;
-    }
-
-    Jugador jugador = (Jugador) sensor.getUserData();
-
-    if (comenzar) {
-        jugador.registrarContactoSuelo();
-    } else {
-        jugador.eliminarContactoSuelo();
-    }
-}
-
-	
 
 
     @Override
@@ -307,3 +200,4 @@ private void configurarContactos() {
         if (mundo != null) mundo.dispose();
     }
 }
+
