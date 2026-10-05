@@ -25,7 +25,6 @@ public class Mapa {
     private final float anchoPixeles;
 
     public Mapa(World mundo) {
-        // Pixel art: sin suavizado al escalar
         TmxMapLoader.Parameters parametros = new TmxMapLoader.Parameters();
         parametros.textureMinFilter = Texture.TextureFilter.Nearest;
         parametros.textureMagFilter = Texture.TextureFilter.Nearest;
@@ -41,7 +40,6 @@ public class Mapa {
         crearParedesLaterales(mundo);
     }
 
-    /** Tiled ya entrega los rectangulos con el eje Y hacia arriba, igual que LibGDX. */
     private void crearColisiones(World mundo) {
         MapLayer capa = mapaTiled.getLayers().get(CAPA_COLISIONES);
         if (capa == null) return;
@@ -54,7 +52,6 @@ public class Mapa {
         }
     }
 
-    /** Paredes invisibles para que los jugadores no salgan de la pantalla. */
     private void crearParedesLaterales(World mundo) {
         new Plataforma(mundo, -GROSOR_PARED, 0, GROSOR_PARED, Config.ALTO_MUNDO);
         new Plataforma(mundo, anchoPixeles, 0, GROSOR_PARED, Config.ALTO_MUNDO);

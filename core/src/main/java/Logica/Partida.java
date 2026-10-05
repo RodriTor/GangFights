@@ -1,10 +1,5 @@
 package Logica;
 
-/**
- * Guarda las reglas y el marcador (sin dibujar nada).
- * El HUD lee estos datos y la PantallaJuego los modifica.
- * Los jugadores se identifican por indice: 0 = jugador 1, 1 = jugador 2.
- */
 public class Partida {
 
     public static final int RONDAS_PARA_GANAR = 3;
@@ -46,7 +41,6 @@ public class Partida {
         }
     }
 
-    /** El perdedor de la ronda esta eliminado hasta que empiece la siguiente. */
     public boolean estaEliminado(int indice) {
         boolean rondaCerrada = estado == EstadoPartida.RONDA_TERMINADA || estado == EstadoPartida.FINALIZADA;
         return rondaCerrada && ganadorRonda != indice;

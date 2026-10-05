@@ -78,11 +78,10 @@ public class Jugador extends Entidad {
         cargarAnimaciones();
     }
 
-    // ---------------------------------------------------------------- carga
 
     private TextureRegion[][] cargarHoja(String ruta) {
         Texture hoja = new Texture(Gdx.files.internal(ruta));
-        texturas.add(hoja); // se libera en dispose()
+        texturas.add(hoja);
         return TextureRegion.split(hoja, ANCHO_FRAME, ALTO_FRAME);
     }
 
@@ -127,8 +126,6 @@ public class Jugador extends Entidad {
         fixtureCuerpo.filter.maskBits = Config.CATEGORIA_PLATAFORMA;
         cuerpo.createFixture(fixtureCuerpo);
 
-        // Sensor en los pies: detecta si realmente estamos tocando el suelo.
-        // Los contactos los cuenta DetectorSuelo (ContactListener de Box2D).
         forma.setAsBox(mitadAncho * 0.8f, MITAD_GROSOR_SENSOR, new Vector2(0, -mitadAlto), 0f);
 
         FixtureDef fixtureSensor = new FixtureDef();
@@ -141,7 +138,6 @@ public class Jugador extends Entidad {
         forma.dispose();
     }
 
-    // ------------------------------------------------------- contacto suelo
 
     public void sumarContactoSuelo() {
         contactosSuelo++;
@@ -155,7 +151,6 @@ public class Jugador extends Entidad {
         return contactosSuelo > 0;
     }
 
-    // ----------------------------------------------------------- actualizar
 
     public void setOyente(EventosJugador oyente) {
         this.oyente = oyente;
@@ -227,9 +222,7 @@ public class Jugador extends Entidad {
         }
     }
 
-    // --------------------------------------------------------------- combate
 
-    /** Si este jugador esta golpeando y el rival esta cerca y de frente, lo elimina. */
     public void comprobarAtaque(Jugador rival) {
         if (!estaGolpeando || !activo || !rival.isActivo()) return;
 
@@ -255,7 +248,6 @@ public class Jugador extends Entidad {
         if (oyente != null) oyente.alSerEliminado();
     }
 
-    /** Vuelve a la posicion inicial para la proxima ronda. */
     public void reaparecer() {
         if (cuerpo != null) {
             mundo.destroyBody(cuerpo);
@@ -278,7 +270,6 @@ public class Jugador extends Entidad {
         return activo;
     }
 
-    // --------------------------------------------------------------- dibujo
 
     @Override
     public void dibujar() {
@@ -312,9 +303,7 @@ public class Jugador extends Entidad {
         return region;
     }
 
-    // -------------------------------------------------------------- recursos
 
-    /** Libera las texturas (los cuerpos Box2D los libera el World al hacer dispose). */
     public void dispose() {
         for (Texture textura : texturas) {
             textura.dispose();

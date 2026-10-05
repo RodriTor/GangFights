@@ -22,7 +22,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class MenuInicial implements Screen {
 
-    private static final float PRIMERA_OPCION_Y = 120f;   // borde superior del texto
+    private static final float PRIMERA_OPCION_Y = 120f;
     private static final float SEPARACION = 45f;
     private static final float ESCALA_SELECCIONADA = 1.4f;
     private static final float ESCALA_NORMAL = 1.0f;

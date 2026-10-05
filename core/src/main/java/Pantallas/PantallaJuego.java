@@ -26,15 +26,11 @@ import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-/**
- * Pantalla de la partida. Es dueña (crea y libera) del World, el Mapa,
- * los jugadores y el HUD.
- * Implementa EventosJugador para reproducir sonidos cuando algo pasa.
- */
+
 public class PantallaJuego implements Screen, EventosJugador {
 
     private static final float TIEMPO_TRANSICION = 2.5f;
-    private static final boolean MOSTRAR_COLISIONES = false; // true: dibuja las cajas de Box2D para revisar el mapa
+    private static final boolean MOSTRAR_COLISIONES = false;
 
     private final NavegadorPantallas navegador;
     private final GestorAudio audio;
@@ -42,7 +38,7 @@ public class PantallaJuego implements Screen, EventosJugador {
 
     private OrthographicCamera camara;
     private Viewport viewport;
-    private Box2DDebugRenderer depurador;   // solo para ver las colisiones (MOSTRAR_COLISIONES)
+    private Box2DDebugRenderer depurador;
     private World mundo;
     private Mapa mapa;
     private Jugador jugador1;
@@ -80,7 +76,6 @@ public class PantallaJuego implements Screen, EventosJugador {
         audio.reproducirMusica(Musica.JUEGO);
     }
 
-    // ------------------------------------------------------------- bucle
 
     @Override
     public void render(float delta) {
@@ -120,7 +115,6 @@ public class PantallaJuego implements Screen, EventosJugador {
         avanzarFisica(delta);
     }
 
-    /** Paso fijo: la simulacion avanza igual sin importar cuantos FPS tenga el juego. */
     private void avanzarFisica(float delta) {
         acumuladorFisica += Math.min(delta, Config.MAXIMO_DELTA);
         while (acumuladorFisica >= Config.PASO_FISICA) {
@@ -168,7 +162,6 @@ public class PantallaJuego implements Screen, EventosJugador {
         }
     }
 
-    // ------------------------------------------------- EventosJugador
 
     @Override
     public void alSaltar() {
@@ -185,7 +178,6 @@ public class PantallaJuego implements Screen, EventosJugador {
         audio.reproducirEfecto(Efecto.ELIMINACION);
     }
 
-    // ---------------------------------------------------------- Screen
 
     @Override
     public void resize(int width, int height) {

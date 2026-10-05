@@ -22,13 +22,13 @@ public class Hud {
     private static final float ANCHO = Config.ANCHO_MUNDO;
     private static final float ALTO = Config.ALTO_MUNDO;
     private static final float MARGEN = 20f;
-    private static final float CAJA = 90f;                 // cuadro de rondas ganadas (misma altura que el panel)
+    private static final float CAJA = 90f;
     private static final float PANEL_ANCHO = 330f;
     private static final float PANEL_ALTO = 90f;
     private static final float RETRATO = 70f;
     private static final float BARRA_ANCHO = 215f;
     private static final float BARRA_ALTO = 20f;
-    private static final int ANCHO_FRAME = 32;             // tamaño de un frame del spritesheet
+    private static final int ANCHO_FRAME = 32;
     private static final int ALTO_FRAME = 42;
 
     private static final Color FONDO = new Color(0.05f, 0.05f, 0.08f, 1f);
@@ -61,7 +61,6 @@ public class Hud {
 
         Personaje[] personajes = {izquierdo, derecho};
         for (int i = 0; i < 2; i++) {
-            // El retrato es el primer frame del spritesheet "quieto" del personaje
             hojas[i] = new Texture(Gdx.files.internal(personajes[i].getRutaQuieto()));
             hojas[i].setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
             retratos[i] = TextureRegion.split(hojas[i], ANCHO_FRAME, ALTO_FRAME)[0][0];
@@ -74,7 +73,6 @@ public class Hud {
         }
     }
 
-    // ------------------------------------------------------------ posiciones
 
     private float cajaX(int i) { return i == 0 ? MARGEN : ANCHO - MARGEN - CAJA; }
     private float cajaY() { return panelY(); }   // alineado con el panel
@@ -85,7 +83,6 @@ public class Hud {
     private float barraX(int i) { return i == 0 ? panelX(i) + RETRATO + 22f : panelX(i) + 10f; }
     private float barraY() { return panelY() + 16f; }
 
-    // ------------------------------------------------------------ actualizar
 
     public void actualizar(Partida partida, GestorAudio audio) {
         this.partida = partida;

@@ -80,7 +80,6 @@ public class PantallaConfiguracion implements Screen {
         logo.setTamanio(logo.getAncho() * alto / logo.getAlto(), alto);
         logo.setPosicion((Config.ANCHO_MUNDO - logo.getAncho()) / 2f, 15f);
 
-        // Estado actual de la ventana
         pantallaCompleta = Gdx.graphics.isFullscreen();
         for (int i = 0; i < RESOLUCIONES.length; i++) {
             if (RESOLUCIONES[i][0] == Gdx.graphics.getWidth() && RESOLUCIONES[i][1] == Gdx.graphics.getHeight()) {
