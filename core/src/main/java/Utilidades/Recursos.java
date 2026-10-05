@@ -1,12 +1,16 @@
 package Utilidades;
 
+/** Rutas de todos los archivos de la carpeta assets. */
 public final class Recursos {
 
     private Recursos() { }
 
     // Logos y menu
-    public static final String LogoPrograma = "Logos/LogoPrograma.png";
     public static final String LOGO = "Logos/LogoPrincipal.png";
+    public static final String LogoPrograma
+        = "Logos/LogoPrograma.png";
+    public static final String CALAVERA = "Logos/Calavera.png";
+    public static final String MAPA_AULA = "Mapas/Aula.tmx";
     public static final String MENU_INICIAL = "Logos/MenuPrincipal.jpg";
     public static final String FUENTE_MENU = "Fuentes/PixelifySans-SemiBold.ttf";
 

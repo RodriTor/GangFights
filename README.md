@@ -10,6 +10,7 @@ Inspirado fuertemente en el clásico ***Superfighters***, el juego sitúa a los 
 
 ---
 
+
 ## - Tecnologías y herramientas
 
 El ecosistema de desarrollo ha sido seleccionado para garantizar un rendimiento óptimo en la renderización y la comunicación en red:

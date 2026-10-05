@@ -20,16 +20,21 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.physics.box2d.Box2DDebugRenderer;
 import com.badlogic.gdx.physics.box2d.World;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-
+/**
+ * Pantalla de la partida. Es dueña (crea y libera) del World, el Mapa,
+ * los jugadores y el HUD.
+ * Implementa EventosJugador para reproducir sonidos cuando algo pasa.
+ */
 public class PantallaJuego implements Screen, EventosJugador {
 
     private static final float TIEMPO_TRANSICION = 2.5f;
+    private static final boolean MOSTRAR_COLISIONES = false; // true: dibuja las cajas de Box2D para revisar el mapa
 
     private final NavegadorPantallas navegador;
     private final GestorAudio audio;
@@ -37,7 +42,7 @@ public class PantallaJuego implements Screen, EventosJugador {
 
     private OrthographicCamera camara;
     private Viewport viewport;
-    private ShapeRenderer shapeRenderer;
+    private Box2DDebugRenderer depurador;   // solo para ver las colisiones (MOSTRAR_COLISIONES)
     private World mundo;
     private Mapa mapa;
     private Jugador jugador1;
@@ -58,7 +63,7 @@ public class PantallaJuego implements Screen, EventosJugador {
     public void show() {
         camara = new OrthographicCamera();
         viewport = new FitViewport(Config.ANCHO_MUNDO, Config.ALTO_MUNDO, camara);
-        shapeRenderer = new ShapeRenderer();
+        depurador = new Box2DDebugRenderer();
 
         mundo = new World(new Vector2(0, Config.GRAVEDAD), true);
         mundo.setContactListener(new DetectorSuelo());
@@ -70,11 +75,12 @@ public class PantallaJuego implements Screen, EventosJugador {
         jugador2.setOyente(this);
 
         partida = new Partida(Personaje.JASINSKI.getNombre(), Personaje.SCHEPIS.getNombre());
-        hud = new Hud();
+        hud = new Hud(Personaje.JASINSKI, Personaje.SCHEPIS);
 
         audio.reproducirMusica(Musica.JUEGO);
     }
 
+    // ------------------------------------------------------------- bucle
 
     @Override
     public void render(float delta) {
@@ -114,7 +120,7 @@ public class PantallaJuego implements Screen, EventosJugador {
         avanzarFisica(delta);
     }
 
-
+    /** Paso fijo: la simulacion avanza igual sin importar cuantos FPS tenga el juego. */
     private void avanzarFisica(float delta) {
         acumuladorFisica += Math.min(delta, Config.MAXIMO_DELTA);
         while (acumuladorFisica >= Config.PASO_FISICA) {
@@ -150,20 +156,19 @@ public class PantallaJuego implements Screen, EventosJugador {
         viewport.apply();
         camara.update();
 
-        shapeRenderer.setProjectionMatrix(camara.combined);
-        shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
-        shapeRenderer.setColor(0.1f, 0.1f, 0.1f, 1f);
-        shapeRenderer.rect(0, 0, Config.ANCHO_MUNDO, Config.ALTO_MUNDO);
-        shapeRenderer.setColor(0.6f, 0.6f, 0.65f, 1f);
-        mapa.dibujar(shapeRenderer);
-        shapeRenderer.end();
+        mapa.dibujar(camara);
 
         Render.comenzarBatch(camara);
         jugador1.dibujar();
         jugador2.dibujar();
         Render.terminarBatch();
+
+        if (MOSTRAR_COLISIONES) {
+            depurador.render(mundo, camara.combined.cpy().scl(Config.PIXELES_POR_METRO));
+        }
     }
 
+    // ------------------------------------------------- EventosJugador
 
     @Override
     public void alSaltar() {
@@ -180,6 +185,7 @@ public class PantallaJuego implements Screen, EventosJugador {
         audio.reproducirEfecto(Efecto.ELIMINACION);
     }
 
+    // ---------------------------------------------------------- Screen
 
     @Override
     public void resize(int width, int height) {
@@ -196,8 +202,8 @@ public class PantallaJuego implements Screen, EventosJugador {
         if (hud != null) hud.dispose();
         if (jugador1 != null) jugador1.dispose();
         if (jugador2 != null) jugador2.dispose();
-        if (shapeRenderer != null) shapeRenderer.dispose();
+        if (depurador != null) depurador.dispose();
+        if (mapa != null) mapa.dispose();
         if (mundo != null) mundo.dispose();
     }
 }
-

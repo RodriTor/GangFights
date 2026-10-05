@@ -2,8 +2,28 @@
 
 Todos los cambios relevantes de **GangFights** se documentarán en este archivo.
 
-<<<<<<< HEAD
-## [0.3.0] - 2026-10-03
+## [0.3.0] - 2026-10-04
+
+### Añadido
+- Mapa del aula creado con **Tiled** (`assets/Mapas/Aula.tmx`, con los tilesets `Classroom.tsx` y `FloorTiles.tsx`), con capa de fondo, capas de decoración y una capa de objetos `Colisiones`.
+- `Mapa` carga el archivo `.tmx`, lo dibuja con el renderizador de LibGDX y convierte cada rectángulo de la capa `Colisiones` en una `Plataforma` de Box2D. Lo que no está en esa capa es solo decoración y los jugadores lo traspasan.
+- Paredes laterales invisibles para que los jugadores no salgan de la pantalla.
+- Modo de depuración `MOSTRAR_COLISIONES` en `PantallaJuego` para dibujar las cajas de Box2D sobre el mapa.
+- Nuevo HUD de partida:
+    - Panel de cada jugador con retrato del personaje, nombre y barra de vida.
+    - Cuadro de rondas ganadas en cada esquina, alineado con el panel.
+    - Marcador de rondas en el centro, con el número de ronda y las rondas necesarias para ganar.
+- Cuando un jugador es eliminado, su retrato cambia a una calavera y su barra de vida se pone toda roja; al empezar la siguiente ronda vuelve a la normalidad (`Calavera.png`).
+- `Partida.estaEliminado(int)` para que el HUD consulte quién fue eliminado.
+### Cambiado
+- `Plataforma` ahora es un bloque sólido invisible: el dibujo del escenario lo hace el mapa de Tiled.
+- `PantallaJuego` ya no usa `ShapeRenderer`; libera el mapa con `dispose()`.
+- `Hud` recibe los personajes por constructor y usa sus propios `ShapeRenderer` y texturas, que libera en `dispose()`.
+- `Recursos` incorpora las rutas del mapa y de la calavera.
+### Eliminado
+- Las plataformas del escenario dibujadas con rectángulos grises y creadas a mano en código.
+
+## [0.2.9] - 2026-10-03
 
 ### Añadido
 - Sistema de entradas separado en el paquete `Entradas`: `Accion` (enum), `ControlJugador` (clase abstracta) y `ControlTeclado`. `Jugador` solo pide acciones y ya no conoce las teclas.
@@ -27,7 +47,7 @@ Todos los cambios relevantes de **GangFights** se documentarán en este archivo.
 - Acceso global `Render.juego`.
 
 
-## [0.2.7] - 2026-10-2
+## [0.2.8] - 2026-10-2
 
 ### Añadido
 

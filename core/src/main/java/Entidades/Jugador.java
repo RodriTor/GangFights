@@ -23,8 +23,8 @@ public class Jugador extends Entidad {
     private static final int ANCHO_FRAME = 32;
     private static final int ALTO_FRAME = 42;
 
-    private static final float ANCHO_CUERPO = 40f;
-    private static final float ALTO_CUERPO = 80f;
+    private static final float ANCHO_CUERPO = 30f;
+    private static final float ALTO_CUERPO = 60f;
 
     private static final float VELOCIDAD = 13f;
     private static final float VELOCIDAD_SALTO = 12f;
@@ -78,6 +78,7 @@ public class Jugador extends Entidad {
         cargarAnimaciones();
     }
 
+    // ---------------------------------------------------------------- carga
 
     private TextureRegion[][] cargarHoja(String ruta) {
         Texture hoja = new Texture(Gdx.files.internal(ruta));
@@ -99,6 +100,7 @@ public class Jugador extends Entidad {
 
         regionSalto = cargarHoja(personaje.getRutaSalto())[0][0];
 
+        // La hoja de golpe mide 64x42: dos frames de 32x42
         TextureRegion[][] golpe = cargarHoja(personaje.getRutaGolpe());
         animacionGolpe = new Animation<>(0.4f, golpe[0][0], golpe[0][1]);
         animacionGolpe.setPlayMode(Animation.PlayMode.NORMAL);
@@ -125,6 +127,8 @@ public class Jugador extends Entidad {
         fixtureCuerpo.filter.maskBits = Config.CATEGORIA_PLATAFORMA;
         cuerpo.createFixture(fixtureCuerpo);
 
+        // Sensor en los pies: detecta si realmente estamos tocando el suelo.
+        // Los contactos los cuenta DetectorSuelo (ContactListener de Box2D).
         forma.setAsBox(mitadAncho * 0.8f, MITAD_GROSOR_SENSOR, new Vector2(0, -mitadAlto), 0f);
 
         FixtureDef fixtureSensor = new FixtureDef();
@@ -137,6 +141,7 @@ public class Jugador extends Entidad {
         forma.dispose();
     }
 
+    // ------------------------------------------------------- contacto suelo
 
     public void sumarContactoSuelo() {
         contactosSuelo++;
@@ -150,6 +155,7 @@ public class Jugador extends Entidad {
         return contactosSuelo > 0;
     }
 
+    // ----------------------------------------------------------- actualizar
 
     public void setOyente(EventosJugador oyente) {
         this.oyente = oyente;
@@ -221,6 +227,9 @@ public class Jugador extends Entidad {
         }
     }
 
+    // --------------------------------------------------------------- combate
+
+    /** Si este jugador esta golpeando y el rival esta cerca y de frente, lo elimina. */
     public void comprobarAtaque(Jugador rival) {
         if (!estaGolpeando || !activo || !rival.isActivo()) return;
 
@@ -246,6 +255,7 @@ public class Jugador extends Entidad {
         if (oyente != null) oyente.alSerEliminado();
     }
 
+    /** Vuelve a la posicion inicial para la proxima ronda. */
     public void reaparecer() {
         if (cuerpo != null) {
             mundo.destroyBody(cuerpo);
@@ -268,6 +278,7 @@ public class Jugador extends Entidad {
         return activo;
     }
 
+    // --------------------------------------------------------------- dibujo
 
     @Override
     public void dibujar() {
@@ -294,13 +305,16 @@ public class Jugador extends Entidad {
             region = animacionQuieto.getKeyFrame(tiempoAnimacion, true);
         }
 
+        // Cada region recuerda si esta espejada, asi que solo la damos vuelta si hace falta
         if (region.isFlipX() == mirandoDerecha) {
             region.flip(true, false);
         }
         return region;
     }
 
+    // -------------------------------------------------------------- recursos
 
+    /** Libera las texturas (los cuerpos Box2D los libera el World al hacer dispose). */
     public void dispose() {
         for (Texture textura : texturas) {
             textura.dispose();
@@ -308,4 +322,3 @@ public class Jugador extends Entidad {
         texturas.clear();
     }
 }
-
