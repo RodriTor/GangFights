@@ -27,7 +27,7 @@ public class Jugador extends Entidad {
     private static final float ALTO_CUERPO = 60f;
 
     private static final float VELOCIDAD = 13f;
-    private static final float VELOCIDAD_SALTO = 12f;
+    private static final float VELOCIDAD_SALTO = 21f;
 
     private static final float RANGO_GOLPE_X = 3.0f;
     private static final float RANGO_GOLPE_Y = 2.0f;
@@ -121,7 +121,7 @@ public class Jugador extends Entidad {
         FixtureDef fixtureCuerpo = new FixtureDef();
         fixtureCuerpo.shape = forma;
         fixtureCuerpo.density = 1.0f;
-        fixtureCuerpo.friction = 0.2f;
+        fixtureCuerpo.friction = 0f;
         fixtureCuerpo.filter.categoryBits = Config.CATEGORIA_JUGADOR;
         fixtureCuerpo.filter.maskBits = Config.CATEGORIA_PLATAFORMA;
         cuerpo.createFixture(fixtureCuerpo);
