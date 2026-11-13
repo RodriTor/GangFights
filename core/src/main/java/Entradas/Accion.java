@@ -5,5 +5,6 @@ public enum Accion {
     DERECHA,
     SALTAR,
     AGACHAR,
-    GOLPEAR
+    GOLPEAR,
+    ESCAPAR
 }

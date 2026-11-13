@@ -8,7 +8,7 @@ import com.badlogic.gdx.physics.box2d.PolygonShape;
 import com.badlogic.gdx.physics.box2d.World;
 
 
-public class Plataforma {
+public class  Plataforma {
 
     public Plataforma(World mundo, float x, float y, float ancho, float alto) {
         BodyDef cuerpoDef = new BodyDef();

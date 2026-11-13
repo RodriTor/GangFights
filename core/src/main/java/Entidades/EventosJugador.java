@@ -8,4 +8,6 @@ public interface EventosJugador {
     void alGolpear();
 
     void alSerEliminado();
+
+    void alRecogerItem();
 }

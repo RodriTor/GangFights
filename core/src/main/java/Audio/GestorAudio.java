@@ -11,8 +11,8 @@ import java.util.EnumMap;
 
 public class GestorAudio {
 
-    private static final int VOLUMEN_MUSICA_INICIAL = 40;
-    private static final int VOLUMEN_EFECTOS_INICIAL = 70;
+    private static final int VOLUMEN_MUSICA_INICIAL = 10;
+    private static final int VOLUMEN_EFECTOS_INICIAL = 10;
     private static final int PASO_VOLUMEN = 10;
 
     private final EnumMap<Musica, Music> musicas = new EnumMap<>(Musica.class);
@@ -44,10 +44,15 @@ public class GestorAudio {
 
     public void reproducirMusica(Musica pista) {
         Music nueva = musicas.get(pista);
-        if (nueva == null || nueva == musicaActual) return;
+        if (nueva == null || nueva == musicaActual) {
+            return;
+        }
+        if (musicaActual != null) {
+            musicaActual.stop();
+        }
 
-        if (musicaActual != null) musicaActual.stop();
         musicaActual = nueva;
+
         aplicarVolumen();
         musicaActual.play();
     }
@@ -69,15 +74,6 @@ public class GestorAudio {
         volumenEfectos = MathUtils.clamp(volumenEfectos + pasos * PASO_VOLUMEN, 0, 100);
     }
 
-    public void subirVolumen() {
-        cambiarVolumenMusica(1);
-        cambiarVolumenEfectos(1);
-    }
-
-    public void bajarVolumen() {
-        cambiarVolumenMusica(-1);
-        cambiarVolumenEfectos(-1);
-    }
 
     public void alternarSilencio() {
         silenciado = !silenciado;
@@ -98,7 +94,14 @@ public class GestorAudio {
 
     private void aplicarVolumen() {
         if (musicaActual != null) {
-            musicaActual.setVolume(silenciado ? 0f : volumenMusica / 100f);
+
+            if(silenciado) {
+                musicaActual.setVolume(0f);
+            }else{
+
+                musicaActual.setVolume(volumenMusica/100f);
+            }
+
         }
     }
 

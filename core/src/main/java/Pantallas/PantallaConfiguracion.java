@@ -194,7 +194,7 @@ public class PantallaConfiguracion implements Screen {
         for (int i = 0; i < categoriasTexto.length; i++) {
             boolean elegida = (i == categoria);
             categoriasTexto[i].setEscala(elegida ? ESCALA_ELEGIDA : 1f);
-            categoriasTexto[i].setColor(elegida ? Color.YELLOW : Color.WHITE);
+            categoriasTexto[i].setColor(elegida ? Color.BLUE : Color.WHITE);
             categoriasTexto[i].setPosicion(X_CATEGORIAS, Y_INICIO - i * 70f);
         }
 

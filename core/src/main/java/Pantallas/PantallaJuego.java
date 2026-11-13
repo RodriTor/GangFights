@@ -10,6 +10,7 @@ import Entidades.Personaje;
 import Entradas.ControlAudio;
 import Entradas.ControlTeclado;
 import Interfaces.NavegadorPantallas;
+import Items.GestorItems;
 import Logica.EstadoPartida;
 import Logica.Partida;
 import Mundo.DetectorSuelo;
@@ -41,6 +42,7 @@ public class PantallaJuego implements Screen, EventosJugador {
     private Box2DDebugRenderer depurador;
     private World mundo;
     private Mapa mapa;
+    private GestorItems items;
     private Jugador jugador1;
     private Jugador jugador2;
     private Partida partida;
@@ -64,6 +66,7 @@ public class PantallaJuego implements Screen, EventosJugador {
         mundo = new World(new Vector2(0, Config.GRAVEDAD), true);
         mundo.setContactListener(new DetectorSuelo());
         mapa = new Mapa(mundo);
+        items = new GestorItems(mapa);
 
         jugador1 = new Jugador(mundo, 230, 300, Personaje.JASINSKI, ControlTeclado.crearJugador1(), true);
         jugador2 = new Jugador(mundo, 1050, 300, Personaje.SCHEPIS, ControlTeclado.crearJugador2(), false);
@@ -87,6 +90,8 @@ public class PantallaJuego implements Screen, EventosJugador {
         }
 
         dibujarMundo();
+        hud.actualizarJugador(0, jugador1.getVida(), Jugador.VIDA_MAXIMA, jugador1.tienePistola());
+        hud.actualizarJugador(1, jugador2.getVida(), Jugador.VIDA_MAXIMA, jugador2.tienePistola());
         hud.actualizar(partida, audio);
         hud.dibujar();
     }
@@ -105,14 +110,23 @@ public class PantallaJuego implements Screen, EventosJugador {
         jugador2.actualizar(delta);
 
         if (partida.getEstado() == EstadoPartida.EN_CURSO) {
-            jugador1.comprobarAtaque(jugador2);
-            jugador2.comprobarAtaque(jugador1);
+            resolverGolpes();
+            items.actualizar(delta, jugador1, jugador2);
             verificarFinDeRonda();
         } else {
             avanzarTransicion(delta);
         }
 
         avanzarFisica(delta);
+    }
+
+    /** Se comprueban los dos golpes antes de aplicarlos: si pegan a la vez, ambos conectan. */
+    private void resolverGolpes() {
+        boolean golpea1 = jugador1.puedeImpactar(jugador2);
+        boolean golpea2 = jugador2.puedeImpactar(jugador1);
+
+        if (golpea1) jugador1.impactar(jugador2);
+        if (golpea2) jugador2.impactar(jugador1);
     }
 
     private void avanzarFisica(float delta) {
@@ -140,6 +154,7 @@ public class PantallaJuego implements Screen, EventosJugador {
             navegador.irAFinal(partida);
         } else {
             partida.siguienteRonda();
+            items.reiniciar();
             jugador1.reaparecer();
             jugador2.reaparecer();
         }
@@ -153,6 +168,7 @@ public class PantallaJuego implements Screen, EventosJugador {
         mapa.dibujar(camara);
 
         Render.comenzarBatch(camara);
+        items.dibujar();
         jugador1.dibujar();
         jugador2.dibujar();
         Render.terminarBatch();
@@ -178,6 +194,11 @@ public class PantallaJuego implements Screen, EventosJugador {
         audio.reproducirEfecto(Efecto.ELIMINACION);
     }
 
+    @Override
+    public void alRecogerItem() {
+        audio.reproducirEfecto(Efecto.CLICK);
+    }
+
 
     @Override
     public void resize(int width, int height) {
@@ -195,6 +216,7 @@ public class PantallaJuego implements Screen, EventosJugador {
         if (jugador1 != null) jugador1.dispose();
         if (jugador2 != null) jugador2.dispose();
         if (depurador != null) depurador.dispose();
+        if (items != null) items.dispose();
         if (mapa != null) mapa.dispose();
         if (mundo != null) mundo.dispose();
     }

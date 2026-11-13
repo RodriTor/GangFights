@@ -14,6 +14,10 @@ public final class Recursos {
     public static final String MENU_INICIAL = "Logos/MenuPrincipal.jpg";
     public static final String FUENTE_MENU = "Fuentes/PixelifySans-SemiBold.ttf";
 
+    // Items
+    public static final String PISTOLA = "Elementos/Pistola.png";
+    public static final String VIDA = "Elementos/Vida.png";
+
     // Schepis
     public static final String SCHEPIS_CORRER = "Spritesheets/Schepis/SchepisCorrer.png";
     public static final String SCHEPIS_SALTAR = "Spritesheets/Schepis/SchepisSalto.png";
@@ -27,6 +31,8 @@ public final class Recursos {
     public static final String JASINSKI_CORRER = "Spritesheets/Jasinski/JasinskiCorrer.png";
     public static final String JASINSKI_AGACHADO = "Spritesheets/Jasinski/JasinskiAgachado.png";
     public static final String JASINSKI_QUIETO = "Spritesheets/Jasinski/JasinskiQuieto.png";
+    public static final String JASINSKI_RECIBIR = "Spritesheets/Jasinski/JasinskiRecibir.png";
+    public static final String JASINSKI_MUERTO = "Spritesheets/Jasinski/JasinskiMuerto.png";
 
     // Audio
     public static final String MUSICA_MENU = "Audio/Musica/menu.wav";
