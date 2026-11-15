@@ -110,7 +110,8 @@ public class PantallaJuego implements Screen, EventosJugador {
         jugador2.actualizar(delta);
 
         if (partida.getEstado() == EstadoPartida.EN_CURSO) {
-            resolverGolpes();
+            jugador1.comprobarAtaque(jugador2);
+            jugador2.comprobarAtaque(jugador1);
             items.actualizar(delta, jugador1, jugador2);
             verificarFinDeRonda();
         } else {
@@ -118,15 +119,6 @@ public class PantallaJuego implements Screen, EventosJugador {
         }
 
         avanzarFisica(delta);
-    }
-
-    /** Se comprueban los dos golpes antes de aplicarlos: si pegan a la vez, ambos conectan. */
-    private void resolverGolpes() {
-        boolean golpea1 = jugador1.puedeImpactar(jugador2);
-        boolean golpea2 = jugador2.puedeImpactar(jugador1);
-
-        if (golpea1) jugador1.impactar(jugador2);
-        if (golpea2) jugador2.impactar(jugador1);
     }
 
     private void avanzarFisica(float delta) {
@@ -192,11 +184,6 @@ public class PantallaJuego implements Screen, EventosJugador {
     @Override
     public void alSerEliminado() {
         audio.reproducirEfecto(Efecto.ELIMINACION);
-    }
-
-    @Override
-    public void alRecogerItem() {
-        audio.reproducirEfecto(Efecto.CLICK);
     }
 
 

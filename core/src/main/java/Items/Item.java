@@ -6,19 +6,19 @@ import Utilidades.Render;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
 /**
- * Objeto del mapa que un jugador puede agarrar. Clase abstracta: cada tipo de item decide
- * cuando se puede recoger (puedeRecoger) y que efecto tiene (aplicar).
- *
- * La posicion se da por la base: la parte de abajo de la imagen queda apoyada en el piso.
+ * Objeto del mapa que un jugador puede agarrar. Cada tipo de item decide cuando se puede
+ * recoger (puedeRecoger) y que efecto tiene (aplicar).
+ * Se crea con la posicion de su base: la parte de abajo del dibujo queda apoyada en el piso.
  */
 public abstract class Item extends Entidad {
 
-    private final TipoItem tipo;
+    private static final float ESCALA = 2f;
+
     private final TextureRegion imagen;
 
-    protected Item(TipoItem tipo, TextureRegion imagen, float x, float base, float ancho, float alto) {
-        super(x, base + alto / 2f, ancho, alto);
-        this.tipo = tipo;
+    protected Item(TextureRegion imagen, float x, float base) {
+        super(x, base + imagen.getRegionHeight() * ESCALA / 2f,
+            imagen.getRegionWidth() * ESCALA, imagen.getRegionHeight() * ESCALA);
         this.imagen = imagen;
     }
 
@@ -32,19 +32,15 @@ public abstract class Item extends Entidad {
         if (!tocaA(jugador) || !puedeRecoger(jugador)) return false;
 
         aplicar(jugador);
-        jugador.notificarRecogida();
         return true;
     }
 
     private boolean tocaA(Jugador jugador) {
-        float dx = Math.abs(getX() - jugador.getX());
-        float dy = Math.abs(getY() - jugador.getY());
-        return dx < (getAncho() + jugador.getAncho()) / 2f
-            && dy < (getAlto() + jugador.getAlto()) / 2f;
-    }
+        float distanciaX = Math.abs(getX() - jugador.getX());
+        float distanciaY = Math.abs(getY() - jugador.getY());
 
-    public TipoItem getTipo() {
-        return tipo;
+        return distanciaX < (getAncho() + jugador.getAncho()) / 2f
+            && distanciaY < (getAlto() + jugador.getAlto()) / 2f;
     }
 
     @Override

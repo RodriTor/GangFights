@@ -3,11 +3,11 @@ package Items;
 import Entidades.Jugador;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
-/** Por ahora solo se equipa (aparece en el HUD). Un jugador no puede llevar dos. */
+/** Por ahora solo se equipa (se ve en el HUD). Un jugador no puede llevar dos. */
 public class Pistola extends Item {
 
-    public Pistola(TextureRegion imagen, float x, float base, float ancho, float alto) {
-        super(TipoItem.PISTOLA, imagen, x, base, ancho, alto);
+    public Pistola(TextureRegion imagen, float x, float base) {
+        super(imagen, x, base);
     }
 
     @Override

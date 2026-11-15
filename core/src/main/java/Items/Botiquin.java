@@ -8,8 +8,8 @@ public class Botiquin extends Item {
 
     private static final int CURACION = 30;
 
-    public Botiquin(TextureRegion imagen, float x, float base, float ancho, float alto) {
-        super(TipoItem.BOTIQUIN, imagen, x, base, ancho, alto);
+    public Botiquin(TextureRegion imagen, float x, float base) {
+        super(imagen, x, base);
     }
 
     @Override

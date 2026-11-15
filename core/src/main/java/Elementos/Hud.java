@@ -1,4 +1,3 @@
-
 package Elementos;
 
 import Audio.GestorAudio;
@@ -8,11 +7,11 @@ import Logica.Partida;
 import Utilidades.Config;
 import Utilidades.Recursos;
 import Utilidades.Render;
+import Utilidades.Sprites;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -43,16 +42,11 @@ public class Hud {
     private static final int ANCHO_FRAME = 32;
     private static final int ALTO_FRAME = 42;
 
-    private static final Color FONDO =
-        new Color(0.05f, 0.05f, 0.08f, 1f);
-    private static final Color FONDO_BARRA =
-        new Color(0.15f, 0.15f, 0.18f, 1f);
-    private static final Color FONDO_SLOT =
-        new Color(0.55f, 0.55f, 0.6f, 1f);
-    private static final Color FONDO_RETRATO =
-        new Color(0.2f, 0.2f, 0.25f, 1f);
-    private static final Color FONDO_RETRATO_MUERTO =
-        new Color(0.45f, 0.05f, 0.05f, 1f);
+    private static final Color FONDO = new Color(0.05f, 0.05f, 0.08f, 1f);
+    private static final Color FONDO_BARRA = new Color(0.15f, 0.15f, 0.18f, 1f);
+    private static final Color FONDO_SLOT = new Color(0.55f, 0.55f, 0.6f, 1f);
+    private static final Color FONDO_RETRATO = new Color(0.2f, 0.2f, 0.25f, 1f);
+    private static final Color FONDO_RETRATO_MUERTO = new Color(0.45f, 0.05f, 0.05f, 1f);
 
     private static final Color[] COLORES = {
         Color.CYAN,
@@ -60,17 +54,12 @@ public class Hud {
     };
 
     private final OrthographicCamera camara = new OrthographicCamera();
-    private final Viewport viewport =
-        new FitViewport(ANCHO, ALTO, camara);
+    private final Viewport viewport = new FitViewport(ANCHO, ALTO, camara);
     private final ShapeRenderer formas = new ShapeRenderer();
 
-    private final Texture calavera =
-        new Texture(Gdx.files.internal(Recursos.CALAVERA));
-    private final Texture texturaPistola =
-        new Texture(Gdx.files.internal(Recursos.PISTOLA));
-
+    private final Texture calavera = new Texture(Gdx.files.internal(Recursos.CALAVERA));
+    private final Texture texturaPistola = new Texture(Gdx.files.internal(Recursos.PISTOLA));
     private TextureRegion iconoPistola;
-
     private final Texture[] hojas = new Texture[2];
     private final TextureRegion[] retratos = new TextureRegion[2];
 
@@ -78,20 +67,14 @@ public class Hud {
     private final Texto[] rondas = new Texto[2];
     private final Texto[] etiquetasRondas = new Texto[2];
 
-    private final Texto marcador =
-        new Texto(Recursos.FUENTE_MENU, 56, Color.YELLOW);
-    private final Texto infoRonda =
-        new Texto(Recursos.FUENTE_MENU, 18, Color.WHITE);
-    private final Texto mensajeCentral =
-        new Texto(Recursos.FUENTE_MENU, 48, Color.WHITE);
-    private final Texto ayuda =
-        new Texto(Recursos.FUENTE_MENU, 18, Color.LIGHT_GRAY);
-    private final Texto estadoAudio =
-        new Texto(Recursos.FUENTE_MENU, 18, Color.LIGHT_GRAY);
+    private final Texto marcador = new Texto(Recursos.FUENTE_MENU, 56, Color.YELLOW);
+    private final Texto infoRonda = new Texto(Recursos.FUENTE_MENU, 18, Color.WHITE);
+    private final Texto mensajeCentral = new Texto(Recursos.FUENTE_MENU, 48, Color.WHITE);
+    private final Texto ayuda = new Texto(Recursos.FUENTE_MENU, 18, Color.LIGHT_GRAY);
+    private final Texto estadoAudio = new Texto(Recursos.FUENTE_MENU, 18, Color.LIGHT_GRAY);
 
     private final float[] fraccionVida = {1f, 1f};
     private final boolean[] conPistola = new boolean[2];
-
     private final Color colorBarra = new Color();
 
     private Partida partida;
@@ -99,96 +82,25 @@ public class Hud {
 
     public Hud(Personaje izquierdo, Personaje derecho) {
 
-        calavera.setFilter(
-            Texture.TextureFilter.Nearest,
-            Texture.TextureFilter.Nearest
-        );
-
-        texturaPistola.setFilter(
-            Texture.TextureFilter.Nearest,
-            Texture.TextureFilter.Nearest
-        );
-
-        iconoPistola =
-            recortarTransparencia(texturaPistola, Recursos.PISTOLA);
+        calavera.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        texturaPistola.setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
+        iconoPistola = Sprites.sinBordeTransparente(texturaPistola, Recursos.PISTOLA);
 
         Personaje[] personajes = {izquierdo, derecho};
 
         for (int i = 0; i < 2; i++) {
+            hojas[i] = new Texture(Gdx.files.internal(personajes[i].getRutaQuieto()));
+            hojas[i].setFilter(Texture.TextureFilter.Nearest, Texture.TextureFilter.Nearest);
 
-            hojas[i] = new Texture(
-                Gdx.files.internal(personajes[i].getRutaQuieto())
-            );
+            retratos[i] = TextureRegion.split(hojas[i], ANCHO_FRAME, ALTO_FRAME)[0][0];
 
-            hojas[i].setFilter(
-                Texture.TextureFilter.Nearest,
-                Texture.TextureFilter.Nearest
-            );
-
-            retratos[i] =
-                TextureRegion.split(
-                    hojas[i], ANCHO_FRAME, ALTO_FRAME
-                )[0][0];
-
-            nombres[i] =
-                new Texto(Recursos.FUENTE_MENU, 24, COLORES[i]);
-
-            rondas[i] =
-                new Texto(Recursos.FUENTE_MENU, 40, Color.WHITE);
-
-            etiquetasRondas[i] =
-                new Texto(Recursos.FUENTE_MENU, 14, Color.LIGHT_GRAY);
+            nombres[i] = new Texto(Recursos.FUENTE_MENU, 24, COLORES[i]);
+            rondas[i] = new Texto(Recursos.FUENTE_MENU, 40, Color.WHITE);
+            etiquetasRondas[i] = new Texto(Recursos.FUENTE_MENU, 14, Color.LIGHT_GRAY);
 
             etiquetasRondas[i].setTexto("RONDAS");
-
-            etiquetasRondas[i].centrarEn(
-                cajaX(i) + CAJA / 2f,
-                cajaY() + 26f
-            );
+            etiquetasRondas[i].centrarEn(cajaX(i) + CAJA / 2f, cajaY() + 26f);
         }
-    }
-
-    /**
-     * Recorta la transparencia de la imagen de la pistola
-     * para que se vea más grande dentro del slot.
-     */
-    private TextureRegion recortarTransparencia(
-        Texture textura, String ruta) {
-
-        Pixmap pixmap = new Pixmap(Gdx.files.internal(ruta));
-
-        int minX = pixmap.getWidth();
-        int minY = pixmap.getHeight();
-        int maxX = -1;
-        int maxY = -1;
-
-        for (int y = 0; y < pixmap.getHeight(); y++) {
-            for (int x = 0; x < pixmap.getWidth(); x++) {
-
-                if ((pixmap.getPixel(x, y) & 0xff) != 0) {
-
-                    minX = Math.min(minX, x);
-                    minY = Math.min(minY, y);
-
-                    maxX = Math.max(maxX, x);
-                    maxY = Math.max(maxY, y);
-                }
-            }
-        }
-
-        pixmap.dispose();
-
-        if (maxX < 0) {
-            return new TextureRegion(textura);
-        }
-
-        return new TextureRegion(
-            textura,
-            minX,
-            minY,
-            maxX - minX + 1,
-            maxY - minY + 1
-        );
     }
 
     private float cajaX(int i) {
@@ -251,31 +163,18 @@ public class Hud {
         return panelY() - SEPARACION_SLOT - SLOT;
     }
 
-    /**
-     * Actualiza la vida y el estado de la pistola de cada jugador.
-     */
-    public void actualizarJugador(
-        int i, int vida, int vidaMaxima, boolean pistola) {
-
-        fraccionVida[i] = MathUtils.clamp(
-            (float) vida / vidaMaxima, 0f, 1f
-        );
-
+    /** Se llama cada frame con los datos del jugador i (0 = izquierda, 1 = derecha). */
+    public void actualizarJugador(int i, int vida, int vidaMaxima, boolean pistola) {
+        fraccionVida[i] = MathUtils.clamp((float) vida / vidaMaxima, 0f, 1f);
         conPistola[i] = pistola;
     }
 
-    /**
-     * Cambia el color de la barra según la vida restante.
-     */
+    /** Verde con la vida llena, amarillo a la mitad y rojo cuando queda poca. */
     private Color colorDeVida(float fraccion) {
-
         if (fraccion > 0.5f) {
-            return colorBarra.set(Color.YELLOW)
-                .lerp(Color.GREEN, (fraccion - 0.5f) * 2f);
+            return colorBarra.set(Color.YELLOW).lerp(Color.GREEN, (fraccion - 0.5f) * 2f);
         }
-
-        return colorBarra.set(Color.RED)
-            .lerp(Color.YELLOW, fraccion * 2f);
+        return colorBarra.set(Color.RED).lerp(Color.YELLOW, fraccion * 2f);
     }
 
     public void actualizar(Partida partida, GestorAudio audio) {
@@ -283,41 +182,18 @@ public class Hud {
         this.partida = partida;
 
         for (int i = 0; i < 2; i++) {
-
             nombres[i].setTexto(partida.getNombre(i));
+            nombres[i].setPosicion(barraX(i), panelY() + PANEL_ALTO - 14f);
 
-            nombres[i].setPosicion(
-                barraX(i),
-                panelY() + PANEL_ALTO - 14f
-            );
-
-            rondas[i].setTexto(
-                String.valueOf(partida.getRondasGanadas(i))
-            );
-
-            rondas[i].centrarEn(
-                cajaX(i) + CAJA / 2f,
-                cajaY() + CAJA - 14f
-            );
+            rondas[i].setTexto(String.valueOf(partida.getRondasGanadas(i)));
+            rondas[i].centrarEn(cajaX(i) + CAJA / 2f, cajaY() + CAJA - 14f);
         }
 
-        marcador.setTexto(
-            partida.getRondasGanadas(0) + " - "
-                + partida.getRondasGanadas(1)
-        );
-
+        marcador.setTexto(partida.getRondasGanadas(0) + " - " + partida.getRondasGanadas(1));
         marcador.centrarEn(ANCHO / 2f, ALTO - MARGEN);
 
-        infoRonda.setTexto(
-            "RONDA " + partida.getRondaActual()
-                + "   |   PARA GANAR: "
-                + Partida.RONDAS_PARA_GANAR
-        );
-
-        infoRonda.centrarEn(
-            ANCHO / 2f,
-            ALTO - MARGEN - 75f
-        );
+        infoRonda.setTexto("RONDA " + partida.getRondaActual() + "   |   PARA GANAR: " + Partida.RONDAS_PARA_GANAR);
+        infoRonda.centrarEn(ANCHO / 2f, ALTO - MARGEN - 75f);
 
         actualizarMensajeCentral(partida);
 
@@ -332,17 +208,10 @@ public class Hud {
         if (audio.isSilenciado()) {
             estadoAudio.setTexto("SONIDO: OFF ");
         } else {
-            estadoAudio.setTexto(
-                "MUSICA: " + audio.getVolumenMusica()
-                    + "%   EFECTOS: "
-                    + audio.getVolumenEfectos() + "%   "
-            );
+            estadoAudio.setTexto("MUSICA: " + audio.getVolumenMusica() + "%   EFECTOS: " + audio.getVolumenEfectos() + "%   ");
         }
 
-        estadoAudio.setPosicion(
-            ANCHO - MARGEN - estadoAudio.getAncho(),
-            40
-        );
+        estadoAudio.setPosicion(ANCHO - MARGEN - estadoAudio.getAncho(), 40);
     }
 
     private void actualizarMensajeCentral(Partida partida) {
@@ -350,19 +219,16 @@ public class Hud {
         String mensaje = "";
 
         switch (partida.getEstado()) {
-
             case PAUSADA:
                 mensaje = "PAUSA";
                 break;
 
             case RONDA_TERMINADA:
-                mensaje = "GANA LA RONDA: "
-                    + partida.getNombre(partida.getGanadorRonda());
+                mensaje = "GANA LA RONDA: " + partida.getNombre(partida.getGanadorRonda());
                 break;
 
             case FINALIZADA:
-                mensaje = "GANA LA PARTIDA: "
-                    + partida.getNombre(partida.getGanadorRonda());
+                mensaje = "GANA LA PARTIDA: " + partida.getNombre(partida.getGanadorRonda());
                 break;
 
             default:
@@ -372,11 +238,7 @@ public class Hud {
         hayMensaje = !mensaje.isEmpty();
 
         mensajeCentral.setTexto(mensaje);
-
-        mensajeCentral.centrarEn(
-            ANCHO / 2f,
-            ALTO / 2f + 40f
-        );
+        mensajeCentral.centrarEn(ANCHO / 2f, ALTO / 2f + 40f);
     }
 
     public void dibujar() {
@@ -389,10 +251,8 @@ public class Hud {
         Render.comenzarBatch(camara);
 
         for (int i = 0; i < 2; i++) {
-
             dibujarRetrato(i);
             dibujarArma(i);
-
             nombres[i].dibujar();
             rondas[i].dibujar();
             etiquetasRondas[i].dibujar();
@@ -420,35 +280,16 @@ public class Hud {
             boolean eliminado = partida.estaEliminado(i);
 
             formas.setColor(COLORES[i]);
-
-            formas.rect(
-                cajaX(i) - 3f,
-                cajaY() - 3f,
-                CAJA + 6f,
-                CAJA + 6f
-            );
+            formas.rect(cajaX(i) - 3f, cajaY() - 3f, CAJA + 6f, CAJA + 6f);
 
             formas.setColor(FONDO);
-
-            formas.rect(
-                cajaX(i), cajaY(), CAJA, CAJA
-            );
+            formas.rect(cajaX(i), cajaY(), CAJA, CAJA);
 
             formas.setColor(COLORES[i]);
-
-            formas.rect(
-                panelX(i) - 3f,
-                panelY() - 3f,
-                PANEL_ANCHO + 6f,
-                PANEL_ALTO + 6f
-            );
+            formas.rect(panelX(i) - 3f, panelY() - 3f, PANEL_ANCHO + 6f, PANEL_ALTO + 6f);
 
             formas.setColor(FONDO);
-
-            formas.rect(
-                panelX(i), panelY(),
-                PANEL_ANCHO, PANEL_ALTO
-            );
+            formas.rect(panelX(i), panelY(), PANEL_ANCHO, PANEL_ALTO);
 
             if (eliminado) {
                 formas.setColor(FONDO_RETRATO_MUERTO);
@@ -456,65 +297,27 @@ public class Hud {
                 formas.setColor(FONDO_RETRATO);
             }
 
-            formas.rect(
-                retratoX(i),
-                retratoY(),
-                RETRATO,
-                RETRATO
-            );
+            formas.rect(retratoX(i), retratoY(), RETRATO, RETRATO);
 
             formas.setColor(Color.WHITE);
-
-            formas.rect(
-                barraX(i) - 2f,
-                barraY() - 2f,
-                BARRA_ANCHO + 4f,
-                BARRA_ALTO + 4f
-            );
+            formas.rect(barraX(i) - 2f, barraY() - 2f, BARRA_ANCHO + 4f, BARRA_ALTO + 4f);
 
             formas.setColor(FONDO_BARRA);
+            formas.rect(barraX(i), barraY(), BARRA_ANCHO, BARRA_ALTO);
 
-            formas.rect(
-                barraX(i),
-                barraY(),
-                BARRA_ANCHO,
-                BARRA_ALTO
-            );
-
-            // La barra de vida se vacía hacia afuera.
+            // La barra se vacia hacia afuera: siempre queda pegada del lado del retrato
             float anchoVida = BARRA_ANCHO * fraccionVida[i];
-
-            float inicioVida = (i == 0)
-                ? barraX(i)
-                : barraX(i) + BARRA_ANCHO - anchoVida;
+            float inicioVida = (i == 0) ? barraX(i) : barraX(i) + BARRA_ANCHO - anchoVida;
 
             formas.setColor(colorDeVida(fraccionVida[i]));
+            formas.rect(inicioVida, barraY(), anchoVida, BARRA_ALTO);
 
-            formas.rect(
-                inicioVida,
-                barraY(),
-                anchoVida,
-                BARRA_ALTO
-            );
-
-            // Cuadrito del arma debajo del panel.
+            // Cuadrito del arma, debajo del panel
             formas.setColor(COLORES[i]);
-
-            formas.rect(
-                slotX(i) - 3f,
-                slotY() - 3f,
-                SLOT + 6f,
-                SLOT + 6f
-            );
+            formas.rect(slotX(i) - 3f, slotY() - 3f, SLOT + 6f, SLOT + 6f);
 
             formas.setColor(FONDO_SLOT);
-
-            formas.rect(
-                slotX(i),
-                slotY(),
-                SLOT,
-                SLOT
-            );
+            formas.rect(slotX(i), slotY(), SLOT, SLOT);
         }
 
         formas.end();
@@ -528,68 +331,33 @@ public class Hud {
         float y = retratoY();
 
         if (partida.estaEliminado(i)) {
-
             float tamanio = RETRATO - 14f;
 
-            batch.draw(
-                calavera,
-                x + (RETRATO - tamanio) / 2f,
-                y + (RETRATO - tamanio) / 2f,
-                tamanio,
-                tamanio
-            );
-
+            batch.draw(calavera, x + (RETRATO - tamanio) / 2f, y + (RETRATO - tamanio) / 2f, tamanio, tamanio);
             return;
         }
 
         float alto = RETRATO - 8f;
         float ancho = alto * ANCHO_FRAME / ALTO_FRAME;
-
         float px = x + (RETRATO - ancho) / 2f;
 
         if (i == 0) {
-            batch.draw(
-                retratos[i],
-                px,
-                y + 4f,
-                ancho,
-                alto
-            );
+            batch.draw(retratos[i], px, y + 4f, ancho, alto);
         } else {
-            batch.draw(
-                retratos[i],
-                px + ancho,
-                y + 4f,
-                -ancho,
-                alto
-            );
+            batch.draw(retratos[i], px + ancho, y + 4f, -ancho, alto);
         }
     }
 
-    /**
-     * Dibuja la pistola dentro del slot cuando el jugador la tiene.
-     */
+    /** Si el jugador tiene la pistola, se ve dentro del cuadrito; si no, el cuadrito queda vacio. */
     private void dibujarArma(int i) {
-
         if (!conPistola[i]) return;
 
         float maximo = SLOT - 12f;
-
-        float escala = Math.min(
-            maximo / iconoPistola.getRegionWidth(),
-            maximo / iconoPistola.getRegionHeight()
-        );
-
+        float escala = Math.min(maximo / iconoPistola.getRegionWidth(), maximo / iconoPistola.getRegionHeight());
         float ancho = iconoPistola.getRegionWidth() * escala;
         float alto = iconoPistola.getRegionHeight() * escala;
 
-        Render.batch.draw(
-            iconoPistola,
-            slotX(i) + (SLOT - ancho) / 2f,
-            slotY() + (SLOT - alto) / 2f,
-            ancho,
-            alto
-        );
+        Render.batch.draw(iconoPistola, slotX(i) + (SLOT - ancho) / 2f, slotY() + (SLOT - alto) / 2f, ancho, alto);
     }
 
     public void redimensionar(int ancho, int alto) {
@@ -625,3 +393,4 @@ public class Hud {
         estadoAudio.dispose();
     }
 }
+

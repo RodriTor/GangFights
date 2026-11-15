@@ -9,7 +9,8 @@ public enum Personaje {
         Recursos.JASINSKI_SALTAR, Recursos.JASINSKI_GOLPE,
         Recursos.JASINSKI_RECIBIR, Recursos.JASINSKI_MUERTO),
 
-
+    // TEMPORAL: Schepis todavia no tiene sprites de recibir ni de muerto, por ahora usa estos.
+    // Cuando existan, solo hay que cambiar estas dos rutas por SCHEPIS_RECIBIR y SCHEPIS_MUERTO.
     SCHEPIS("SCHEPIS",
         Recursos.SCHEPIS_QUIETO, Recursos.SCHEPIS_AGACHADO, Recursos.SCHEPIS_CORRER,
         Recursos.SCHEPIS_SALTAR, Recursos.SCHEPIS_GOLPE,
