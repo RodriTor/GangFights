@@ -11,5 +11,7 @@ public interface NavegadorPantallas {
 
     void irAConfiguracion();
 
+    void irAOnline();
+
     void irAFinal(Partida partida);
 }

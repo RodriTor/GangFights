@@ -8,6 +8,7 @@ import Pantallas.PantallaConfiguracion;
 import Pantallas.PantallaFinal;
 import Pantallas.PantallaInicio;
 import Pantallas.PantallaJuego;
+import Pantallas.PantallaOnline;
 import Utilidades.Render;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
@@ -57,6 +58,11 @@ public class Principal extends Game implements NavegadorPantallas {
     @Override
     public void irAConfiguracion() {
         pantallaPendiente = new PantallaConfiguracion(this, audio);
+    }
+
+    @Override
+    public void irAOnline() {
+        pantallaPendiente = new PantallaOnline(this, audio);
     }
 
     @Override

@@ -64,6 +64,7 @@ public class MenuInicial implements Screen {
         ayudaAudio.setTexto("ARRIBA / ABAJO: elegir    ENTER: seleccionar    M: silenciar");
         ayudaAudio.setPosicion(20, 30);
 
+        // Se oculta el cursor: el menu solo se maneja con el teclado
         Gdx.graphics.setSystemCursor(Cursor.SystemCursor.None);
 
         audio.reproducirMusica(Musica.MENU);
@@ -107,6 +108,9 @@ public class MenuInicial implements Screen {
         switch (opcion) {
             case PLAY:
                 navegador.irAJuego();
+                break;
+            case ONLINE:
+                navegador.irAOnline();
                 break;
             case CONFIGURACION:
                 navegador.irAConfiguracion();
