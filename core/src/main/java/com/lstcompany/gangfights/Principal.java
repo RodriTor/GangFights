@@ -9,6 +9,8 @@ import Pantallas.PantallaFinal;
 import Pantallas.PantallaInicio;
 import Pantallas.PantallaJuego;
 import Pantallas.PantallaOnline;
+import Red.ClienteRed;
+import Pantallas.PantallaPartidaOnline;
 import Utilidades.Render;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Screen;
@@ -62,12 +64,18 @@ public class Principal extends Game implements NavegadorPantallas {
 
     @Override
     public void irAOnline() {
+    	System.out.println("NAVEGANDO A PANTALLA ONLINE");
         pantallaPendiente = new PantallaOnline(this, audio);
     }
 
     @Override
     public void irAFinal(Partida partida) {
         pantallaPendiente = new PantallaFinal(this, audio, partida);
+    }
+    
+    @Override
+    public void irAPartidaOnline(ClienteRed clienteRed) {
+        pantallaPendiente = new PantallaPartidaOnline(this, clienteRed);
     }
 
     @Override

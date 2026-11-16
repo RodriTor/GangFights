@@ -1,3 +1,4 @@
+
 package Pantallas;
 
 import Audio.Efecto;
@@ -5,9 +6,11 @@ import Audio.GestorAudio;
 import Elementos.Texto;
 import Entradas.ControlAudio;
 import Interfaces.NavegadorPantallas;
+import Red.ClienteRed;
 import Utilidades.Config;
 import Utilidades.Recursos;
 import Utilidades.Render;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Screen;
@@ -17,8 +20,6 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
-
-/** Pantalla para conectarse a un servidor de la red local. */
 public class PantallaOnline implements Screen {
 
     private enum Opcion {
@@ -40,18 +41,28 @@ public class PantallaOnline implements Screen {
     private final NavegadorPantallas navegador;
     private final GestorAudio audio;
     private final ControlAudio controlAudio;
+
     private final Opcion[] opciones = Opcion.values();
     private final Texto[] textos = new Texto[opciones.length];
 
     private OrthographicCamera camara;
     private Viewport viewport;
+
     private Texto titulo;
     private Texto estado;
     private Texto ayuda;
 
+    private ClienteRed clienteRed;
+
     private int seleccion = 0;
 
-    public PantallaOnline(NavegadorPantallas navegador, GestorAudio audio) {
+    private boolean solicitandoIP = false;
+    private boolean conexionTransferida = false;
+
+    public PantallaOnline(
+        NavegadorPantallas navegador,
+        GestorAudio audio
+    ) {
         this.navegador = navegador;
         this.audio = audio;
         this.controlAudio = new ControlAudio(audio);
@@ -59,89 +70,190 @@ public class PantallaOnline implements Screen {
 
     @Override
     public void show() {
+    	
         camara = new OrthographicCamera();
-        viewport = new FitViewport(Config.ANCHO_MUNDO, Config.ALTO_MUNDO, camara);
+
+        viewport = new FitViewport(
+            Config.ANCHO_MUNDO,
+            Config.ALTO_MUNDO,
+            camara
+        );
 
         titulo = new Texto(Recursos.FUENTE_MENU, 44, Color.YELLOW);
         titulo.setTexto("ONLINE");
         titulo.centrarEn(Config.ANCHO_MUNDO / 2f, 640);
 
         for (int i = 0; i < opciones.length; i++) {
-            textos[i] = new Texto(Recursos.FUENTE_MENU, 26, Color.WHITE);
+
+            textos[i] = new Texto(
+                Recursos.FUENTE_MENU,
+                26,
+                Color.WHITE
+            );
+
             textos[i].setTexto(opciones[i].texto);
         }
 
-        estado = new Texto(Recursos.FUENTE_MENU, 20, Color.LIGHT_GRAY);
-        estado.setTexto("Busca un servidor disponible en la red local");
+        estado = new Texto(Recursos.FUENTE_MENU,20,Color.LIGHT_GRAY);
+
+        estado.setTexto("Busca un servidor para comenzar");
+
         estado.centrarEn(Config.ANCHO_MUNDO / 2f, Y_ESTADO);
 
-        ayuda = new Texto(Recursos.FUENTE_MENU, 16, Color.LIGHT_GRAY);
-        ayuda.setTexto("ARRIBA / ABAJO: elegir    ENTER: seleccionar    ESC: volver    M: silenciar");
+        ayuda = new Texto(Recursos.FUENTE_MENU, 16 ,Color.LIGHT_GRAY
+        );
+
+        ayuda.setTexto("ARRIBA / ABAJO: elegir    ENTER: seleccionar    ESC: volver");
+
         ayuda.setPosicion(20, 30);
 
+        clienteRed = new ClienteRed();
+
         Gdx.graphics.setSystemCursor(Cursor.SystemCursor.None);
+
         actualizarAspectoOpciones();
     }
 
     @Override
     public void render(float delta) {
+    	
         controlAudio.actualizar();
+
+        actualizarConexion();
         procesarTeclado();
 
         Render.limpiarPantalla(0, 0, 0);
+
         viewport.apply();
         camara.update();
 
         Render.comenzarBatch(camara);
+
         titulo.dibujar();
+
         for (Texto texto : textos) {
             texto.dibujar();
         }
+
         estado.dibujar();
         ayuda.dibujar();
+
         Render.terminarBatch();
     }
 
+
+private void actualizarConexion() {
+	
+	if (clienteRed == null) {
+		return;
+	}
+	
+	if (clienteRed.estaConectado()) {
+		
+		int jugadores = clienteRed.obtenerJugadoresConectados();
+		
+		if(clienteRed.estaPartidaIniciada()) {
+			
+			estado.setTexto("PARTIDA INICIADA!");
+			
+			estado.centrarEn(Config.ANCHO_MUNDO / 2f, Y_ESTADO);
+			
+			
+			if(!conexionTransferida) {
+				conexionTransferida = true;
+				navegador.irAPartidaOnline(clienteRed);
+			}
+		} else {
+			
+			estado.setTexto("CONECTADO - JUGADOR " + clienteRed.obtenerNumeroJugador() + " | JUGADORES: " + jugadores + "/2" + " | ESPERANDO");
+			
+		}
+		
+		
+	}
+    
+}
+
+
     private void procesarTeclado() {
+
+        if (solicitandoIP) {
+            return;
+        }
+
         if (Gdx.input.isKeyJustPressed(Input.Keys.UP)) {
+
             seleccion = (seleccion - 1 + opciones.length) % opciones.length;
+
             audio.reproducirEfecto(Efecto.CLICK);
+
             actualizarAspectoOpciones();
+
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.DOWN)) {
+
             seleccion = (seleccion + 1) % opciones.length;
+
             audio.reproducirEfecto(Efecto.CLICK);
+
             actualizarAspectoOpciones();
+
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
+
             audio.reproducirEfecto(Efecto.CLICK);
+
             ejecutarOpcion(opciones[seleccion]);
+
         } else if (Gdx.input.isKeyJustPressed(Input.Keys.ESCAPE)) {
+
             navegador.irAMenu();
         }
     }
 
     private void ejecutarOpcion(Opcion opcion) {
+
         switch (opcion) {
+
             case BUSCAR:
                 buscarServidor();
                 break;
+
             case VOLVER:
                 navegador.irAMenu();
                 break;
         }
     }
 
-    // La busqueda real (broadcast) se agrega en el paso de red: por ahora solo se muestra el estado
     private void buscarServidor() {
-        estado.setTexto("Buscando servidor en la red... (todavia no disponible)");
+
+        if (clienteRed.estaConectado()) {
+            estado.setTexto("Ya estas conectado como jugador "
+                + clienteRed.obtenerNumeroJugador());
+            return;
+        }
+
+        if (clienteRed.estaConectando()) {
+            return;
+        }
+
+        estado.setTexto("Conectando con el servidor...");
         estado.centrarEn(Config.ANCHO_MUNDO / 2f, Y_ESTADO);
+
+        System.out.println("Iniciando conexion con el servidor...");
+
+        clienteRed.conectar("127.0.0.1", 5000);
     }
 
     private void actualizarAspectoOpciones() {
+
         for (int i = 0; i < textos.length; i++) {
+
             boolean elegida = (i == seleccion);
+
             textos[i].setEscala(elegida ? ESCALA_ELEGIDA : 1f);
+
             textos[i].setColor(elegida ? Color.YELLOW : Color.WHITE);
-            textos[i].centrarEn(Config.ANCHO_MUNDO / 2f, PRIMERA_OPCION_Y - i * SEPARACION);
+
+            textos[i].centrarEn(Config.ANCHO_MUNDO / 2f,PRIMERA_OPCION_Y - i * SEPARACION);
         }
     }
 
@@ -160,11 +272,20 @@ public class PantallaOnline implements Screen {
 
     @Override
     public void dispose() {
+
+        if (clienteRed != null && !conexionTransferida) {
+            clienteRed.cerrar();
+        }
+
         if (titulo != null) titulo.dispose();
         if (estado != null) estado.dispose();
         if (ayuda != null) ayuda.dispose();
+
         for (Texto texto : textos) {
-            if (texto != null) texto.dispose();
+
+            if (texto != null) {
+                texto.dispose();
+            }
         }
     }
 }
